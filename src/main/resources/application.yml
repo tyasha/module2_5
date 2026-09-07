@@ -1,0 +1,22 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: file-storage-api
+
+  r2dbc:
+    url: r2dbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:filestorage}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+
+  flyway:
+    # Flyway у R2DBC нет нативной поддержки — мигрирует через отдельный
+    # блокирующий JDBC-драйвер (mysql-connector-j), см. build.gradle
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:filestorage}
+    user: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    locations: classpath:db/migration
+
+# TODO: секции minio/jwt появятся вместе с соответствующими @ConfigurationProperties,
+# когда дойдём до реализации Security и загрузки файлов — не заводить заранее вслепую

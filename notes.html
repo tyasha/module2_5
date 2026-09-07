@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Конспект — Java-бэкенд</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 16px 18px calc(48px + env(safe-area-inset-bottom));
+    color: #1c1c1e;
+    background: #fff;
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { color: #e3e3e6; background: #1c1c1e; }
+    code, pre { background: #2c2c2e !important; }
+    .howto { background: #2a2a1e; border-color: #5a5a2a; }
+    details { background: #232325; border-color: #3a3a3c; }
+    th { background: #2c2c2e; }
+    td, th { border-color: #3a3a3c; }
+    a { color: #6cb6ff; }
+    h1, h2 { border-color: #3a3a3c; }
+  }
+  h1 { font-size: 1.6rem; line-height: 1.25; margin: 0.6em 0 0.4em; }
+  h2 { font-size: 1.3rem; margin: 1.8em 0 0.5em; padding-top: 0.5em; border-top: 2px solid #e0e0e0; }
+  h3 { font-size: 1.1rem; margin: 1.4em 0 0.4em; }
+  p { margin: 0.6em 0; }
+  hr { border: none; border-top: 1px solid #e0e0e0; margin: 1.6em 0; }
+  code {
+    font: 0.88em/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: #f2f2f7; padding: 0.1em 0.35em; border-radius: 5px;
+  }
+  pre {
+    background: #f2f2f7; border-radius: 10px; padding: 12px 14px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  pre code { background: none; padding: 0; font-size: 0.82rem; }
+  table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 0.8em 0; }
+  th, td { border: 1px solid #d0d0d5; padding: 7px 10px; text-align: left; font-size: 0.92rem; }
+  th { background: #f2f2f7; }
+  details {
+    background: #f7f7fa; border: 1px solid #e0e0e5; border-radius: 10px;
+    padding: 10px 14px; margin: 0.6em 0 1em;
+  }
+  details[open] { padding-bottom: 4px; }
+  summary {
+    cursor: pointer; font-weight: 600; color: #0a66c2;
+    list-style: none; padding: 2px 0;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "❓ "; }
+  details[open] summary::before { content: "✅ "; }
+  .howto {
+    background: #fffbe6; border: 1px solid #e8d98a; border-radius: 10px;
+    padding: 12px 16px; margin: 1em 0; font-size: 0.95rem;
+  }
+  .q { font-weight: 600; }
+  blockquote { margin: 0.6em 0; }
+  .toc summary::before, .toc[open] summary::before { content: "📚 "; }
+  .toc ol { margin: 0.4em 0 0.2em; padding-left: 1.5em; }
+  .toc li { margin: 0.15em 0; }
+  .toc a { text-decoration: none; }
+  .toc b { display: block; margin: 0.6em 0 0.1em; font-size: 0.9rem; opacity: 0.7; }
+  .mysql {
+    background: #e8f3fb; border: 1px solid #9cc7e6; border-left: 4px solid #4a90c2;
+    border-radius: 8px; padding: 10px 14px; margin: 0.8em 0; font-size: 0.95rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    .mysql { background: #18242e; border-color: #2f5670; border-left-color: #4a90c2; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Конспект — Java-бэкенд</h1>
+
+<div class="howto">
+  <b>Как этим пользоваться (важно!).</b> Этот файл — не для пассивного перечитывания: пассивное
+  чтение — слабейшая из учебных техник. На каждом блоке сначала попробуй ответить на ❓ сам
+  (блок свёрнут — раскрывается по тапу), и только потом сверься. Это превращает перечитывание в
+  тренировку припоминания (retrieval practice). Распределение во времени и перемешивание тем —
+  в <code>review.md</code>; этот файл их дополняет, а не заменяет.
+  <br><br>
+  Формат блока: <b>Суть</b> (одна фраза) → <b>Простыми словами</b> → <b>Мини-пример</b>
+  (нейтральные данные) → <b>Senior-нюанс</b> (почему/механизм/компромисс) → <b>❓ Проверь себя</b>.
+  <br><br>
+  Этот модуль — File Storage REST API на Spring Boot: реактивный стек (<b>Spring WebFlux</b>)
+  вместо привычного blocking MVC, файлы — в <b>MinIO S3</b> вместо локального диска, авторизация
+  — <b>JWT</b> с ролями (ADMIN/MODERATOR/USER) вместо самодельного хедера. Там, где решение
+  отличается от подхода модуля 2.4 (голые Servlets, ручной Hibernate), это явно отмечается.
+</div>
+
+<details class="toc">
+<summary>Оглавление</summary>
+<b>Часть I. Spring Boot / WebFlux</b>
+<ol>
+<li><a href="#ioc">IoC-контейнер и инверсия управления</a></li>
+<li><a href="#scope">Bean scope: singleton и thread-safety</a></li>
+<li><a href="#prototype-trap">Prototype-in-singleton: классическая ловушка</a></li>
+<li><a href="#lifecycle">Жизненный цикл бина: @PostConstruct и BeanPostProcessor</a></li>
+<li><a href="#di">Constructor injection vs field injection</a></li>
+<li><a href="#inheritance">Наследование бинов (XML-эпоха)</a></li>
+<li><a href="#collections">Внедрение коллекций и Open/Closed</a></li>
+<li><a href="#eager">Eager-инстанцирование singleton при старте</a></li>
+<li><a href="#full-lifecycle">Полный конвейер: от Java-объекта до бина в контексте</a></li>
+<li><a href="#self-invocation-tx">Self-invocation + propagation: почему батч не сохраняется целиком</a></li>
+<li><a href="#final-proxy">final-класс ломает @Transactional</a></li>
+<li><a href="#autoconfig">Auto-configuration: воронка @EnableAutoConfiguration</a></li>
+<li><a href="#webflux-reactive">WebFlux: event loop и опасность блокирующего вызова</a></li>
+</ol>
+<b>Часть II. Spring Security / JWT</b>
+<ol>
+<li><a href="#authn-authz">Аутентификация vs авторизация</a></li>
+<li><a href="#basic-auth">Basic Auth и роль TLS</a></li>
+<li><a href="#bcrypt">Почему BCrypt, а не SHA-256, для паролей</a></li>
+<li><a href="#jwt-sign">JWT подписывает, а не шифрует</a></li>
+<li><a href="#access-refresh">Access + refresh токен</a></li>
+<li><a href="#jwt-stateless">JWT stateless — и почему его нельзя отозвать</a></li>
+<li><a href="#roles-permissions">Роли vs permission'ы: комбинаторный взрыв</a></li>
+<li><a href="#dto-per-role">DTO по ролям: @JsonView vs отдельные классы</a></li>
+</ol>
+<b>Часть III. Docker</b>
+<ol>
+<li><a href="#docker-vs-vm">Docker vs виртуальная машина: что реально изолирует</a></li>
+<li><a href="#docker-layers">Image layers и кэширование сборки</a></li>
+<li><a href="#docker-volumes">Volumes: bind mount vs named volume</a></li>
+<li><a href="#docker-localhost">localhost внутри контейнера vs host.docker.internal</a></li>
+<li><a href="#docker-compose-dns">Docker Compose: как сервисы находят друг друга по имени</a></li>
+<li><a href="#docker-secrets">Секрет в docker-compose.yml: почему mало просто .gitignore</a></li>
+</ol>
+<b>Часть IV. MinIO / AWS SDK</b>
+<ol>
+<li><i>(появится по мере прохождения)</i></li>
+</ol>
+<b>Часть V. Тестирование (JUnit / Mockito / Testcontainers)</b>
+<ol>
+<li><a href="#junit-discovery">JUnit: как фреймворк находит тесты — и молчаливый пропуск</a></li>
+<li><a href="#mockito-void-stub">Mockito: why doReturn().when() вместо when().thenReturn() для void</a></li>
+<li><a href="#mockito-strict-stubbing">Mockito: strict stubbing и UnnecessaryStubbingException</a></li>
+</ol>
+<b>Часть VI. Kubernetes</b>
+<ol>
+<li><a href="#k8s-architecture">Архитектура k8s: Control Plane, Pod/Deployment/Service</a></li>
+<li><a href="#k8s-labels-selectors">Как Service находит свои поды: labels/selectors</a></li>
+<li><a href="#k8s-storage">PV/PVC vs emptyDir, access modes и почему File Storage — на S3</a></li>
+<li><a href="#k8s-configmap-secret">ConfigMap vs Secret</a></li>
+<li><a href="#k8s-clusterip-nodeport">ClusterIP vs NodePort: не всё должно быть публичным</a></li>
+<li><a href="#k8s-secret-base64">k8s Secret: Base64 — не шифрование</a></li>
+<li><a href="#scaling-vs-bug">Нужно больше реплик, или это баг? CPU как индикатор</a></li>
+</ol>
+</details>
+
+<h2>Spring IoC-контейнер: механика</h2>
+
+<h3 id="ioc">IoC-контейнер и инверсия управления</h3>
+<p class="q">Суть.</p>
+<p>Без Spring разработчик сам решает, какую реализацию создать и когда (<code>new Impl()</code>
+прямо в коде). С Spring это решение переезжает контейнеру — код просто просит зависимость, а
+кто её создаст и в каком виде отдаст, решает контейнер. Инвертируется именно это: было
+"объект сам управляет своими зависимостями", стало "контейнер управляет зависимостями объекта".</p>
+<p class="q">Простыми словами.</p>
+<p>Представь ресторан: раньше повар сам ходил на рынок за продуктами (решал, что и где купить).
+Теперь продукты ему просто привозят по заказу — повар только готовит. Он "внедряет" ингредиенты,
+а не добывает их сам.</p>
+<pre><code>// без IoC — класс сам решает, какую реализацию создать
+class OrderService {
+    private PaymentGateway gateway = new StripeGateway(); // жёстко зашито
+}
+
+// с IoC — класс просто объявляет зависимость, контейнер её подставляет
+class OrderService {
+    private final PaymentGateway gateway;
+    OrderService(PaymentGateway gateway) { this.gateway = gateway; } // какую реализацию — решает контейнер
+}</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Цена инверсии — потеря прямой трассируемости. В обычном коде <code>Ctrl+click</code> по
+<code>new Impl()</code> сразу показывает, кто и как создал объект. С IoC-контейнером связывание
+происходит через reflection/конфигурацию в рантайме — при `NullPointerException` из-за
+незаинжекченного бина нельзя просто "пройти по стрелочке", нужно понимать механизм контейнера
+(bean definitions, ApplicationContext). Гибкость и слабая связанность — в обмен на explicit-ность
+потока управления.</p>
+<details><summary>Чем в реальном коде отличается класс, написанный "под IoC", от класса,
+который сам создаёт себе зависимости?</summary>
+Класс "под IoC" не содержит ни одного <code>new ИмяКонкретногоКласса()</code> для своих
+зависимостей — только объявляет, что ему нужно (через конструктор/параметр), и не знает, какая
+конкретно реализация придёт. Класс без IoC сам выбирает и создаёт конкретный класс внутри себя —
+и потому жёстко привязан именно к этой реализации.
+</details>
+
+<h3 id="scope">Bean scope: singleton и thread-safety</h3>
+<p class="q">Суть.</p>
+<p>По умолчанию у бина в Spring scope — <code>singleton</code>: один экземпляр на весь
+контейнер, общий для всех, кто его использует. Если у такого бина есть mutable-поле, и в него
+пишут из нескольких потоков одновременно (например, параллельные HTTP-запросы) — это race
+condition.</p>
+<p class="q">Простыми словами.</p>
+<p>Один кассовый аппарат на весь магазин, а не по кассе на каждого покупателя. Если два кассира
+одновременно попробуют вручную поправить в нём одно и то же число — получится каша, кто последний
+записал, тот и победил, а чьи-то изменения потеряются.</p>
+<pre><code>@Service
+class CounterService {
+    private int counter = 0;           // мутируемое поле — общее на все потоки
+    void increment() { counter++; }    // не атомарно: read-modify-write, потоки могут перебить друг друга
+}</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Лечится не через <code>final</code> (тот не спасает мутируемые коллекции/объекты — он
+защищает только от переприсваивания ссылки), а через stateless-дизайн: singleton-сервис вообще
+не должен хранить изменяемое состояние в своих полях. Всё, что меняется от вызова к вызову,
+должно жить в локальных переменных метода или параметрах — никогда в поле бина. Если состояние
+реально нужно шарить — thread-safe структура (<code>ConcurrentHashMap</code>, atomics),
+синхронизация, либо (чаще всего правильно) — вынести его вовне, в БД/кэш/сессию.</p>
+<details><summary>Bean с полем-List, который просто мутируют (add/remove, без пересоздания) —
+спасёт ли тут <code>final</code> на этом поле?</summary>
+Нет. <code>final</code> запрещает только переприсвоить ссылку на другой объект — сам объект
+(List) как был мутируемым, так и остался, и несколько потоков всё так же могут одновременно
+его портить. Единственный надёжный вариант — вообще не держать такое состояние в поле singleton-
+бина.
+</details>
+
+<h3 id="prototype-trap">Prototype-in-singleton: классическая ловушка</h3>
+<p class="q">Суть.</p>
+<p>Кроме <code>singleton</code>, есть scope'ы <code>prototype</code> (новый экземпляр на
+каждый запрос бина у контейнера), <code>request</code>/<code>session</code>/<code>application</code>
+(веб-scope'ы) и кастомные. Но если <code>prototype</code>-бин внедрить через конструктор в
+<code>singleton</code>-бин — получится только <b>один</b> экземпляр prototype-бина на всё
+приложение, а не новый на каждый вызов.</p>
+<p class="q">Простыми словами.</p>
+<p>Представь вендинговый автомат (singleton, один на всё здание), который при включении один раз
+берёт свежую банку колы со склада (prototype) и держит её у себя в лотке навсегда. Каждый
+покупатель получает ту же самую банку — хотя склад мог бы выдавать новую при каждом обращении,
+но к складу за новой никто больше не обращается после самого первого раза.</p>
+<pre><code>@Component
+@Scope("prototype")
+class RequestContext { /* новый экземпляр на каждый getBean() */ }
+
+@Service // singleton — создаётся ОДИН раз
+class OrderService {
+    private final RequestContext ctx; // DI отработает один раз, при создании OrderService
+    OrderService(RequestContext ctx) { this.ctx = ctx; }
+    // на каждый вызов метода используется один и тот же ctx, а не свежий prototype
+}</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Причина — DI резолвится один раз, в момент создания singleton-бина, а не при каждом вызове
+его методов. "Прототипность" гарантирует новый экземпляр только когда контейнер явно попросили
+создать бин — тут просят один раз. Три стандартных фикса: <code>@Lookup</code>-метод (Spring
+через CGLIB подставляет реализацию, которая каждый раз идёт в контейнер за свежим бином),
+<code>ObjectProvider&lt;T&gt;</code>/<code>Provider&lt;T&gt;</code> (фабрика-обёртка, вызов
+<code>.getObject()</code> откладывает получение бина на момент реального использования), или
+scoped-proxy (<code>@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)</code> — в поле кладётся
+не бин, а прокси, который сам достаёт свежий экземпляр на каждый вызов). Ещё нюанс: контейнер
+не вызывает <code>destroy()</code> у prototype-бинов — после выдачи он их не отслеживает.</p>
+<details><summary>Singleton-бин через конструктор получает DI prototype-бина. Сколько экземпляров
+prototype-бина будет создано за всё время жизни приложения?</summary>
+Один. DI резолвится ровно один раз — в момент создания singleton-бина. Дальше поле просто
+хранит ту единственную ссылку, и каждый вызов метода singleton-бина использует её же, а не
+запрашивает у контейнера новый prototype-экземпляр.
+</details>
+
+<h3 id="lifecycle">Жизненный цикл бина: @PostConstruct и BeanPostProcessor</h3>
+<p class="q">Суть.</p>
+<p>Порядок при создании бина: сначала конструктор (просто создаёт Java-объект), потом сеттеры
+Spring расставляет зависимости (если используется setter-инъекция), и только после этого —
+<code>@PostConstruct</code>. <code>BeanPostProcessor</code> — отдельный компонент, который
+видит и может модифицировать <b>каждый</b> бин контейнера на этапе инициализации, а не только
+"свой".</p>
+<p class="q">Простыми словами.</p>
+<p>Конструктор — это как заселение новосотрудника в офис: стол дали, компьютер поставили, но
+доступы (зависимости через сеттер) выдают чуть позже, отдельным шагом. <code>@PostConstruct</code>
+— это "всё готово, можно приступать к работе" — вызывается только когда все доступы точно есть.
+<code>BeanPostProcessor</code> — это HR-отдел, который прогоняет через себя вообще всех новых
+сотрудников по очереди, а не одного конкретного.</p>
+<pre><code>class ReportService {
+    private Formatter formatter; // будет внедрён через сеттер
+    ReportService() {
+        formatter.format(...);   // NPE! сеттер ещё не вызван на этапе конструктора
+    }
+    @Autowired
+    void setFormatter(Formatter f) { this.formatter = f; }
+    @PostConstruct
+    void init() {
+        formatter.format(...);   // ОК — тут formatter гарантированно уже установлен
+    }
+}</code></pre>
+<p>ASCII-порядок этапов создания бина:</p>
+<pre><code>new Bean()  →  сеттеры (DI)  →  BeanPostProcessor.before  →  @PostConstruct  →  BeanPostProcessor.after
+   ↑                                                                                    ↑
+конструктор,                                                            тут, например, оборачивают
+поля ещё пустые                                                          бин в AOP-прокси (@Transactional)</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p><code>@Transactional</code> работает именно через <code>BeanPostProcessor</code>: исходный
+класс сервиса компилируется как обычный класс, никакого <code>try/catch</code> в его код никто
+не вписывает. Вместо этого в контейнер вместо (точнее — вокруг) оригинального объекта кладётся
+<b>proxy</b>, который перехватывает вызовы методов, открывает транзакцию перед вызовом и
+коммитит/откатывает после. Отсюда классические грабли — self-invocation: если один
+<code>@Transactional</code>-метод класса вызывает другой такой же метод того же класса через
+<code>this.other()</code>, вызов идёт напрямую к таргет-объекту в обход прокси — и транзакция
+на втором методе не применяется. Чинится через self-injection (внедрить в бин самого себя,
+прокси-версию) или <code>AopContext.currentProxy()</code> с <code>exposeProxy=true</code>.</p>
+<details><summary>Метод А вызывает метод Б того же класса напрямую (this.б()), оба помечены
+@Transactional. Сработает ли транзакция на Б?</summary>
+Нет. Вызов через <code>this</code> идёт к обычному объекту в обход прокси, который как раз и
+отвечает за открытие транзакции — advice просто не срабатывает. Так же не сработают и другие
+AOP-аспекты (например, <code>@Async</code>, кастомные <code>@Cacheable</code>), навешанные через
+прокси — при self-invocation мимо прокси идёт вообще любая aspect-логика, не только транзакции.
+</details>
+
+<h3 id="di">Constructor injection vs field injection</h3>
+<p class="q">Суть.</p>
+<p>Constructor injection (зависимость через параметр конструктора) в проде предпочтительнее
+field injection (<code>@Autowired</code> прямо над полем) по двум причинам: тестируемость без
+поднятия Spring-контекста и возможность сделать поле <code>final</code>.</p>
+<p class="q">Простыми словами.</p>
+<p>Field injection — это как собирать мебель, а потом просовывать недостающие детали в готовую
+конструкцию через щели (реально работает только благодаря reflection). Constructor injection —
+все детали кладутся на стол сразу, до сборки, и без них конструкцию просто не соберёшь.</p>
+<pre><code>// field injection — без контейнера объект не соберёшь нормально
+class ReportService {
+    @Autowired private Formatter formatter;
+}
+
+// constructor injection — можно собрать руками, даже в тесте
+class ReportService {
+    private final Formatter formatter;
+    ReportService(Formatter formatter) { this.formatter = formatter; }
+}
+// в тесте, без Spring вообще:
+var service = new ReportService(mockFormatter);</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p><code>final</code> здесь — не просто стиль: он гарантирует, что зависимость не может стать
+<code>null</code> или подмениться после создания объекта (объект immutable по своим связям).
+Плюс fail-fast: если обязательная зависимость не резолвится, приложение упадёт сразу при старте
+(на этапе поднятия <code>ApplicationContext</code>), а не тихой NPE где-то в проде на первом
+реальном вызове метода — с field injection бин может успешно "создаться" наполовину пустым и
+сломаться позже, в куда менее предсказуемый момент.</p>
+<details><summary>Два конкретных плюса constructor injection перед field injection?</summary>
+(1) Тестируемость — объект можно создать напрямую (<code>new Service(mock)</code>) без Spring-
+контекста и без reflection-хаков. (2) Поле можно объявить <code>final</code> — гарантия
+immutability связей плюс fail-fast при старте приложения, если зависимость не резолвится.
+</details>
+
+<h3 id="inheritance">Наследование бинов (XML-эпоха)</h3>
+<p class="q">Суть.</p>
+<p>Bean inheritance в Spring (<code>&lt;bean parent="..."&gt;</code>) — это наследование
+<b>конфигурации</b> бина (значения свойств, constructor-аргументы), а не Java-наследование
+классов. Дочерний и родительский бин могут быть основаны на никак не связанных между собой
+Java-классах.</p>
+<p class="q">Простыми словами.</p>
+<p>Это как заполнить один бланк-шаблон с частью полей, а потом делать с него копии, где
+дозаполняются только недостающие поля — сам "бланк" никак не связан с тем, что на нём в итоге
+напишут.</p>
+<pre><code>&lt;!-- XML-конфиг, устаревший стиль --&gt;
+&lt;bean id="baseValidator" class="Validator" abstract="true"&gt;
+    &lt;property name="strict" value="true"/&gt;
+&lt;/bean&gt;
+&lt;bean id="emailValidator" class="EmailValidator" parent="baseValidator"/&gt;
+&lt;!-- EmailValidator получит strict=true, хотя классы Validator и EmailValidator
+     могут быть вообще не связаны Java-наследованием --&gt;</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Это фича именно XML-конфигурации. В 2026, при конфигурации через аннотации/Java-config
+(<code>@Configuration</code>/<code>@Bean</code>), её почти никто не использует — вместо
+переиспользования настроек через bean inheritance просто пишут обычное Java-наследование
+классов или композицию. Знать для собеса и для чтения legacy XML-конфигов, активно применять
+в 2026 — нет смысла.</p>
+<details><summary>Обязательно ли Java-классу дочернего бина расширять (extends) класс
+родительского бина, чтобы наследование бинов сработало?</summary>
+Нет. Наследуется конфигурация (property values, constructor args), а не код класса — классы
+могут быть вообще никак не связаны в иерархии Java-наследования.
+</details>
+
+<h3 id="collections">Внедрение коллекций и Open/Closed</h3>
+<p class="q">Суть.</p>
+<p>Если в контейнере несколько бинов одного интерфейса, инъекция одиночного поля этого типа
+кинет <code>NoUniqueBeanDefinitionException</code> (непонятно, какой выбрать). А инъекция
+<code>List&lt;Интерфейс&gt;</code> вместо ошибки автоматически соберёт в список <b>все</b> бины
+этого типа из контейнера.</p>
+<p class="q">Простыми словами.</p>
+<p>Просишь "дай мне ОДНОГО кассира" в зале, где их трое — непонятно, кого выбрать, менеджер
+теряется. А просишь "дай мне ВСЕХ кассиров" — получаешь список из всех троих, без вопросов.</p>
+<pre><code>interface PaymentValidator { boolean validate(Payment p); }
+
+@Component class AmountValidator implements PaymentValidator { ... }
+@Component class FraudValidator implements PaymentValidator { ... }
+
+@Service
+class PaymentService {
+    private final List&lt;PaymentValidator&gt; validators; // соберёт оба бина автоматически
+    PaymentService(List&lt;PaymentValidator&gt; validators) { this.validators = validators; }
+}</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Это прямое применение Open/Closed принципа через DI: добавляешь новый класс с
+<code>@Component</code>, реализующий тот же интерфейс — и он сам появляется в списке при
+следующем старте контейнера, без единой правки в <code>PaymentService</code>. Так на практике
+строят цепочки валидаторов, обработчиков событий, стратегии выбора конкретной реализации (в
+проде — например, выбор платёжного шлюза по типу карты/банка) — систему расширяют новым
+поведением, не трогая код, который этим поведением пользуется.</p>
+<details><summary>Завтра добавляется новый класс-реализация PaymentValidator с @Component —
+что придётся поменять в PaymentService, который использует List&lt;PaymentValidator&gt;?</summary>
+Ничего. Новый бин сам появится в списке при следующем старте приложения — Spring
+пересобирает список из всех подходящих бинов контейнера, руками ничего регистрировать не нужно.
+</details>
+
+<h3 id="eager">Eager-инстанцирование singleton при старте</h3>
+<p class="q">Суть.</p>
+<p><code>ApplicationContext</code> при старте (<code>refresh()</code>) создаёт <b>все</b>
+singleton-бины сразу — не по требованию (lazy), а eager. Ленивый по умолчанию — более
+низкоуровневый <code>BeanFactory</code>, но на практике почти всегда используется
+<code>ApplicationContext</code>.</p>
+<p class="q">Простыми словами.</p>
+<p>Перед открытием ресторана шеф-повар проверяет ВСЮ кухню сразу — все плиты включаются, все
+ингредиенты достаются — а не ждёт первого заказа, чтобы обнаружить, что забыли соль. Если чего-то
+не хватает — это выяснится ДО открытия дверей, а не на середине рабочего дня.</p>
+<pre><code>ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+// в этот самый момент уже созданы ВСЕ singleton-бины, а не при первом getBean()</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Это тот же fail-fast принцип, что и с constructor injection: если бин не может корректно
+создаться (не резолвится обязательная зависимость, падает конструктор) — приложение упадёт
+сразу при старте, а не тихо в проде при первом реальном обращении к бину. Если для конкретного
+бина всё же нужна ленивая инициализация (например, он дорогой и редко используется) — есть
+<code>@Lazy</code>.</p>
+<details><summary>ApplicationContext при старте создаёт все singleton-бины сразу или по
+требованию — и как это связано с fail-fast?</summary>
+Сразу, eager, все разом при <code>refresh()</code>. Это и есть fail-fast: если какой-то бин не
+может создаться, приложение падает немедленно при старте, а не в неопределённый момент в
+продакшене на первом реальном обращении к этому бину.
+</details>
+
+<h3 id="full-lifecycle">Полный конвейер: от Java-объекта до бина в контексте</h3>
+<p class="q">Суть.</p>
+<p>Всё, что мы разобрали по кускам (Environment, bean definitions, BeanPostProcessor,
+lifecycle, proxy) — это этапы одного сквозного конвейера. Держать его целиком в голове —
+ключ к пониманию, почему self-invocation ломает транзакции и почему прокси создаётся именно
+там, где создаётся.</p>
+<p class="q">Простыми словами.</p>
+<p>Как конвейер на заводе: сначала завозят сырьё и настраивают станки (Environment, bean
+definitions) — ни одной детали ещё не сделано. Потом штампуют заготовки (создание объектов) —
+болванки есть, но не собраны. Потом сборка (DI, init). И только в самом конце — упаковка в
+коробку с этикеткой (proxy) — то, что видит конечный покупатель, это уже коробка, а не голая
+деталь.</p>
+<pre><code>ЭТАП 0 (без Spring)   new SomeClass() → просто объект, никем не управляется
+────────────────────── дальше — под управлением Spring ──────────────────────
+ЭТАП 1  Environment          command-line > env vars > профиль > application.yml
+                              (+ кастомные EnvironmentPostProcessor)
+ЭТАП 2  Bean Definitions     @Component-сканеры, @Configuration/@Bean, BeanRegistrar (Spring 7)
+                              — регистрируют РЕЦЕПТЫ, объектов ещё нет
+ЭТАП 3  BeanFactoryPostProcessor   видит ВСЕ definitions разом, может их править
+                              (метаданные неполные — у @Bean нет class name в definition)
+ЭТАП 4  Создание объектов    "полупрозрачные" — ничего не заинжектено, init не было, proxy нет
+ЭТАП 4.5  populateBean()     field/@Autowired-инъекция — ОТДЕЛЬНЫЙ шаг, ДО пары BPP #1/#2
+ЭТАП 5  BeanPostProcessor #1 (before)   тут прячется @PostConstruct (через CommonAnnotationBPP)
+ЭТАП 6  Init-метод           afterPropertiesSet() / init-method (НЕ то же самое, что @PostConstruct)
+ЭТАП 7  BeanPostProcessor #2 (after)    ЗДЕСЬ создаются PROXY (@Transactional, @Async, AOP)
+ЭТАП 8  Бин в контексте      готов, доступен через DI/getBean(), ContextRefreshedEvent
+──────────────────────────────── рантайм ─────────────────────────────────────
+ЭТАП 9  Работает: контроллеры, scheduled, event listeners
+──────────────────────────────── shutdown ────────────────────────────────────
+ЭТАП 10 destroy()/@PreDestroy — ТОЛЬКО у singleton (см. prototype-in-singleton выше)</code></pre>
+<p class="q">Проверено сильной моделью (важные поправки).</p>
+<p>Field/<code>@Autowired</code>-инъекция — это отдельный вызов <code>populateBean()</code>/
+<code>postProcessProperties()</code>, который идёт ДО пары BeanPostProcessor before/after, а не
+"внутри" before, как можно было подумать. А вот <code>@PostConstruct</code> — наоборот, реально
+прячется ВНУТРИ BeanPostProcessor #1 (его вызывает конкретный
+<code>CommonAnnotationBeanPostProcessor</code> в своей реализации before-метода) — и это НЕ то
+же самое, что <code>afterPropertiesSet()</code>/<code>init-method</code>, которые срабатывают
+отдельным шагом ПОСЛЕ всех before-BPP. Также: встроенный веб-сервер (Tomcat/Netty) реально
+стартует и начинает слушать порт ДО <code>ContextRefreshedEvent</code>, оба события — часть
+одного финального шага <code>finishRefresh()</code>.</p>
+<p class="q">Senior-нюанс.</p>
+<p>Прокси создаётся строго на этапе 7 — последнем возможном этапе модификации бина, потому что
+всё остальное (DI, init) должно быть уже готово ДО того, как объект завернут в обёртку.
+Отсюда прямое следствие: любой код внутри самого бина, обращающийся к своим же методам через
+<code>this.метод()</code>, идёт к оригинальному объекту с этапа 4–6 — прокси с этапа 7 для
+<code>this</code> просто не существует. Это единый механизм, объясняющий и self-invocation
+problem с <code>@Transactional</code>, и то, почему кастомные <code>@Aspect</code> ломаются
+точно так же.</p>
+<details><summary>Bean, зарегистрированный через @Bean-метод — почему в его BeanDefinition
+нет class name, а у @Component-бина есть?</summary>
+Из-за полиморфизма: метод, помеченный <code>@Bean</code>, теоретически может вернуть объект
+любого подтипа заявленного возвращаемого типа (или вообще другой тип, если возвращаемый тип —
+интерфейс/`Object`) — реальный класс неизвестен, пока метод физически не выполнится. У
+<code>@Component</code>-класса класс известен сразу — он и есть аннотированный класс.
+</details>
+
+<h3 id="self-invocation-tx">Self-invocation + propagation: почему батч не сохраняется целиком</h3>
+<p class="q">Суть.</p>
+<p>Метод <code>saveAll()</code> (default propagation, <code>REQUIRED</code>) открывает ОДНУ
+транзакцию на весь цикл. Внутри цикла вызывается <code>this.save()</code>, помеченный
+<code>@Transactional(propagation = REQUIRES_NEW)</code> — но так как вызов идёт через
+<code>this</code>, а не через прокси, никакой новой транзакции не открывается. Это всё та же
+единственная внешняя транзакция. Когда один <code>save()</code> ловит исключение от БД
+(например, дубликат) — исключение поймано в коде (<code>try/catch</code>), но сама транзакция
+на уровне БД/transaction-manager уже помечена как "битая". Итог — коммитить нечего, ничего не
+сохраняется вообще, хотя код выглядит так, будто каждая запись сохраняется в своей собственной
+изолированной транзакции.</p>
+<p class="q">Простыми словами.</p>
+<p>Представь общий банковский счёт (одна транзакция на весь цикл), а не отдельный кошелёк на
+каждую покупку, хотя чеки выглядят так, будто каждая покупка — отдельная операция. Одна
+испорченная покупка — блокируется весь счёт целиком, и в конце откатываются вообще все
+покупки, не только та, что сломалась.</p>
+<pre><code>@Transactional // REQUIRED — открывает ОДНУ транзакцию на весь метод
+void saveAll(List&lt;Phrase&gt; phrases) {
+    for (Phrase p : phrases) {
+        try {
+            this.save(p); // ⚠️ идёт к оригинальному объекту, МИМО прокси
+        } catch (Exception e) {
+            log.warn("duplicate: {}", p); // исключение поймано...
+        }
+        // ...но транзакция уже помечена rollback-only на уровне БД
+    }
+} // в итоге НИЧЕГО не закоммитится
+
+@Transactional(propagation = Propagation.REQUIRES_NEW) // это условие никогда не сработает
+void save(Phrase p) { repository.save(p); }</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Фикс — self-injection: заинжектить в бин самого себя (свой же proxy) и вызывать
+<code>myProxy.save(p)</code> вместо <code>this.save(p)</code>. По умолчанию Spring запрещает
+такие циклические self-ссылки (нужно явно разрешить,
+<code>spring.main.allow-circular-references=true</code>) — потому что сам self-injection это
+признанный анти-паттерн, применяемый только как осознанный компромисс. Правильное архитектурное
+решение — вынести <code>save()</code> в отдельный сервис, тогда инъекция идёт через настоящий,
+отдельный прокси без всякого self-inject.</p>
+<details><summary>Почему исключение, пойманное через try/catch внутри saveAll(), не спасает
+транзакцию от полного отката?</summary>
+Потому что try/catch гасит исключение только на уровне ПРИЛОЖЕНИЯ — сама транзакция на уровне
+БД/transaction-manager узнаёт о проблеме раньше и независимо от твоего catch, и помечает себя
+rollback-only. К моменту, когда твой код поймал исключение и продолжил работу, транзакцию уже
+физически нельзя закоммитить — she "мертва" изнутри, даже если приложение не в курсе.
+</details>
+
+<h3 id="final-proxy">final-класс ломает @Transactional</h3>
+<p class="q">Суть.</p>
+<p>Если класс с <code>@Transactional</code> объявлен как <code>final</code> — прокси-механизм
+Spring по умолчанию (CGLIB) не сможет его обернуть, потому что CGLIB строит прокси через
+наследование (генерирует подкласс твоего класса в рантайме) — а от <code>final</code>-класса
+унаследоваться нельзя ни при каких условиях. Это не тихая поломка, а честный fail-fast:
+Spring не может создать нужный CGLIB-подкласс и падает с <code>AopConfigException</code>
+прямо при старте контекста.</p>
+<p class="q">Простыми словами.</p>
+<p>Прокси — это как дублёр актёра, загримированный под оригинал (тот же класс через
+наследование). Если "оригинал" в принципе нельзя копировать (final = запрет на клонирование
+через наследование) — дублёра сделать не получится, и режиссёр (Spring) сразу останавливает
+съёмку с явной ошибкой, а не выпускает сцену без дублёра в надежде, что никто не заметит.</p>
+<pre><code>@Transactional
+final class PaymentService { // CGLIB не может унаследоваться — AopConfigException при старте
+    void charge(...) { ... }
+}</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Два варианта решения: (1) не делать класс <code>final</code> — тогда CGLIB строит прокси
+через наследование как обычно; (2) если класс обязан быть <code>final</code> по архитектурным
+причинам — вынести публичные методы в интерфейс и инжектить/использовать класс везде именно
+через этот интерфейс. Тогда Spring создаст JDK dynamic proxy (реализация интерфейса, не
+наследник класса) — этому механизму <code>final</code> на самом классе не мешает вообще, ему
+важен только интерфейс.</p>
+<details><summary>Класс с @Transactional объявлен final — что произойдёт: ошибка компиляции,
+ошибка при старте приложения, или тихая логическая поломка в рантайме?</summary>
+Ошибка при старте приложения — компиляция пройдёт без проблем (IntelliJ лишь предупреждает),
+но Spring не сможет создать CGLIB-прокси (нельзя унаследоваться от final-класса) и упадёт с
+<code>AopConfigException</code> ещё на этапе поднятия <code>ApplicationContext</code>. Это
+честный fail-fast, а не молчаливая логическая поломка, всплывающая незаметно в проде.
+</details>
+
+<h3 id="autoconfig">Auto-configuration: воронка @EnableAutoConfiguration</h3>
+<p class="q">Суть.</p>
+<p><code>@SpringBootApplication</code> = <code>@Configuration</code> + <code>@ComponentScan</code>
++ <code>@EnableAutoConfiguration</code>. Магия — не во внешней инфраструктуре, как у
+<code>@Transactional</code> (там отдельный <code>BeanPostProcessor</code> создаёт proxy) —
+магия зашита прямо в саму аннотацию через <code>@Import(AutoConfigurationImportSelector.class)</code>.
+Этот селектор собирает ~150–185 кандидатов auto-configuration классов со всего classpath,
+фильтрует их через <code>@Conditional</code>-семейство — до реальных бинов доходят единицы.</p>
+<p class="q">Простыми словами.</p>
+<p>Собеседование на 150 вакансий сразу, куда пришли вообще все кандидаты с рынка труда, а не
+только релевантные. HR (<code>@Conditional</code>) быстро отсеивает почти всех по формальным
+признакам: "у тебя есть нужный класс в classpath?" (<code>@ConditionalOnClass</code>), "ты уже
+сам нанял такого сотрудника?" (<code>@ConditionalOnMissingBean</code>), "вакансия явно не
+закрыта флагом в конфиге?" (<code>@ConditionalOnProperty</code>). До оффера (реального бина в
+контексте) доходят единицы.</p>
+<pre><code>@EnableAutoConfiguration
+  → @Import(AutoConfigurationImportSelector.class)
+  → selectImports(): сканирует ВСЕ jar на classpath (AutoConfiguration.imports)
+  → ~150-185 кандидатов
+  → фильтр: @ConditionalOnClass / @ConditionalOnMissingBean / @ConditionalOnProperty
+  → единицы реальных бинов → ApplicationContext</code></pre>
+<p>Полная воронка с примерами — отдельная схема:
+<a href="https://claude.ai/code/artifact/98758d3c-195a-412d-b25a-b2d786b0f8f6">Воронка автоконфигурации</a>
+(продолжение <a href="https://claude.ai/code/artifact/b2f88249-efe8-4b96-af3b-009bb301b286">Конвейера бина</a>).</p>
+<p class="q">Senior-нюанс.</p>
+<p>В 2017-м большинство auto-configuration классов лежали централизованно в одном джаре
+<code>spring-boot-autoconfigure</code> — нарушение Open/Closed, каждый новый стартер требовал
+править общий список. Файл <code>AutoConfiguration.imports</code> ввели в Spring Boot 2.7 как
+альтернативу, но <b>с Spring Boot 3.0 старый ключ `EnableAutoConfiguration` в
+`spring.factories` полностью удалён</b> — это не "эволюция, можно и так и так", а обязательная
+миграция: на 3.x без нового файла auto-configuration класс просто не найдётся. Ещё один
+близкий по духу механизм из той же эпохи: <code>ApplicationContextInitializer</code> —
+находится рано (найден ещё в конструкторе <code>SpringApplication</code> через
+<code>spring.factories</code>), но вызывается позже, внутри <code>prepareContext()</code> —
+сразу ПОСЛЕ того, как в контекст передан Environment, и ДО загрузки bean definitions — удобное
+место для fail-fast (например, "нет активного профиля → валим контекст сразу").</p>
+<details><summary>Почему @EnableAutoConfiguration принципиально отличается по механизму от
+@Transactional — где именно "живёт" магия в каждом случае?</summary>
+У <code>@Transactional</code> магия — во внешней инфраструктуре: отдельный
+<code>BeanPostProcessor</code> сканирует бины, находит аннотацию, оборачивает бин в proxy. Сама
+аннотация — просто маркер, ничего не делает сама по себе. У
+<code>@EnableAutoConfiguration</code> магия зашита прямо в саму аннотацию — она несёт
+<code>@Import(AutoConfigurationImportSelector.class)</code>, то есть само определение аннотации
+уже содержит инструкцию "подключи вот этот класс, который сделает всю работу".
+</details>
+
+<h3 id="webflux-reactive">WebFlux: event loop и опасность блокирующего вызова</h3>
+<p class="q">Суть.</p>
+<p>В блокирующем Spring MVC поток обслуживает один запрос от начала до конца — если запрос ждёт
+БД/сеть, поток всё это время простаивает; на N одновременных медленных запросов нужно N потоков.
+В WebFlux — маленькая горстка потоков (по числу ядер CPU, Netty event loop), которые
+<b>никогда не блокируются</b>: отдал задачу и переключился на другой запрос, вызывающий код
+только подписывается на результат (<code>Mono</code>/<code>Flux</code>) вместо ожидания.</p>
+<p class="q">Простыми словами.</p>
+<p>Блокирующий официант — стоит у окошка кухни, пока готовят именно его заказ, остальные столики
+ждут. Реактивный официант — отдал заказ, ушёл принимать другие столики, кухня сама позовёт, когда
+готово. Один официант реально обслуживает много столиков, просто никогда не стоит без дела.</p>
+<pre><code>// блокирующий стиль — поток ждёт здесь физически
+User user = jdbcTemplate.queryForObject(...);   // поток "стоит у кухни"
+
+// реактивный стиль — поток не ждёт, просто подписывается
+Mono<User> user = r2dbcRepository.findById(id);  // "позовите, когда будет готово"
+user.subscribe(u -> ...);</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Раз потоков мало и они шарятся между тысячами запросов — один-единственный блокирующий вызов
+внутри реактивной цепочки (обычный JDBC-запрос по ошибке, <code>Thread.sleep</code>, синхронный
+HTTP-клиент) стопорит не только себя, а непропорционально большой кусок ВСЕГО трафика
+приложения, который в этот момент шарит с ним тот же поток event loop. Это принципиально хуже,
+чем в блокирующем мире, где зависший запрос топит только свой собственный поток. Именно поэтому
+в реактивных проектах Flyway (блокирующий JDBC) держат физически отдельно от рантайм-запросов
+(R2DBC) — не архитектурная прихоть, а жёсткая необходимость: одно "но это же просто миграция"
+в общем реактивном пайплайне могло бы положить продакшн.</p>
+<details><summary>Если ни один поток в реактивном подходе никогда не блокируется на ожидании —
+сколько потоков теоретически нужно, чтобы держать 10 000 одновременных медленных запросов:
+тоже 10 000, как в блокирующем MVC, или сильно меньше?</summary>
+Сильно меньше — условно горстка потоков по числу ядер CPU, а не по потоку на запрос. Это и есть
+весь смысл реактивности: масштабирование за счёт того, что потоки никогда не простаивают в
+ожидании, а не за счёт их количества.
+</details>
+
+<h2>Spring Security / JWT</h2>
+
+<h3 id="authn-authz">Аутентификация vs авторизация</h3>
+<p class="q">Суть.</p>
+<p>Аутентификация — «кто ты?» (проверка личности, происходит один раз при логине). Авторизация
+— «что тебе можно?» (проверка прав, происходит на КАЖДЫЙ запрос заново).</p>
+<p class="q">Простыми словами.</p>
+<p>Паспортный контроль в аэропорту (аутентификация — сверили лицо с паспортом) и посадочный
+талон (авторизация — этот конкретный талон открывает вход именно в твой самолёт, не в любой).</p>
+<p class="q">Senior-нюанс.</p>
+<p>Ты аутентифицируешься один раз и получаешь JWT. Каждый последующий запрос сервер заново
+проверяет авторизацию (роль/permission) — но НЕ переаутентифицирует тебя каждый раз, токен уже
+доказал личность. Смешивать эти два шага в голове — источник путаницы в дизайне security.</p>
+<details><summary>Ты успешно ввёл пароль и получил JWT, но сервер вернул 403 Forbidden на
+конкретном эндпоинте — на каком из двух этапов случился провал?</summary>
+На авторизации, не аутентификации. Аутентификация уже прошла успешно (иначе токен бы не
+выдали/не приняли — вернулся бы 401). 403 означает: «мы точно знаем, кто ты, но у тебя нет прав
+на это конкретное действие».
+</details>
+
+<h3 id="basic-auth">Basic Auth и роль TLS</h3>
+<p class="q">Суть.</p>
+<p><code>Authorization: Basic base64(user:pass)</code> — Base64 НЕ шифрование, это просто
+обратимая перекодировка без ключа. Реальную защиту при передаче даёт исключительно
+HTTPS/TLS-канал вокруг всего запроса.</p>
+<p class="q">Простыми словами.</p>
+<p>Написать пароль на открытке (Base64) и отправить обычной почтой — почтальон легко прочитает.
+HTTPS — это отправка той же открытки в непрозрачном опечатанном конверте: почтальон видит только
+конверт, не содержимое.</p>
+<pre><code>// Base64 разворачивается БЕЗ всякого ключа — просто функция кодирования
+String decoded = new String(Base64.getDecoder().decode("aXZhbjoxMjM0")); // "ivan:1234"</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Basic Auth нельзя использовать по голому HTTP — только поверх HTTPS. Даже с HTTPS у него
+архитектурный минус: логин/пароль улетают на сервер ПРИ КАЖДОМ запросе, в отличие от токен-схем
+(JWT), где credentials передаются один раз при логине.</p>
+<details><summary>Перехватили заголовок Authorization: Basic ... по HTTP без TLS — сколько
+времени нужно, чтобы получить логин/пароль в чистом виде?</summary>
+Секунды — просто раскодировать Base64 на любом онлайн-декодере, без всякого взлома или подбора
+ключа. Base64 не даёт никакой криптографической защиты сама по себе.
+</details>
+
+<h3 id="bcrypt">Почему BCrypt, а не SHA-256, для паролей</h3>
+<p class="q">Суть.</p>
+<p>SHA-256 — быстрый хеш (для контрольных сумм), а быстрый хеш — подарок для brute-force атаки.
+BCrypt — специально медленный алгоритм именно для хранения паролей, с солью «из коробки».</p>
+<p class="q">Простыми словами.</p>
+<p>SHA-256 — скоростной кассовый аппарат, пробивающий миллиард чеков в секунду: отлично для
+проверки целостности файла, но подарок для того, кто перебирает пароли. BCrypt — кассир,
+который на КАЖДЫЙ чек тратит заметное время специально, чтобы перебор миллиарда паролей занял
+годы, а не секунды.</p>
+<pre><code>@Bean
+public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder(); // не MessageDigest.getInstance("SHA-256")
+}</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Видеокарта считает миллиарды SHA-256 в секунду при переборе — но всего пару тысяч
+BCrypt-хешей в секунду, потому что алгоритм искусственно «тормозит» сам себя (work factor,
+настраиваемая «сила» — как в видео: <code>BCryptPasswordEncoder(12)</code>). Это единственная
+причина выбора именно BCrypt/Argon2/scrypt для паролей, а не более новых или быстрых хешей.</p>
+<details><summary>Почему нельзя просто взять SHA-256 и добавить к нему соль вручную — разве это
+не решит проблему brute-force?</summary>
+Соль защищает только от rainbow-table атак (предвычисленных таблиц хешей), но не от скорости
+перебора — с солью или без, SHA-256 остаётся быстрым, и видеокарта всё равно перебирает
+миллиарды вариантов в секунду. Медленность — отдельное, самостоятельное свойство, которого у
+SHA-256 нет, а у BCrypt есть намеренно.
+</details>
+
+<h3 id="jwt-sign">JWT подписывает, а не шифрует</h3>
+<p class="q">Суть.</p>
+<p>Подпись (HMAC/RSA) доказывает «это создал именно сервер, никто не подделал» — но НЕ прячет
+содержимое. Payload (claims) любой может раскодировать и прочитать без всякого ключа, точно как
+с Basic Auth.</p>
+<p class="q">Простыми словами.</p>
+<p>Справка с печатью и подписью директора: любой прохожий может прочитать текст справки (там
+всё открытым текстом), но подделать печать не может. Печать делает текст подлинным, не тайным.</p>
+<pre><code>// header.payload.signature — payload = обычный Base64, читается без ключа
+// jwt.io мгновенно покажет весь payload любого чужого токена</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Прямое следствие: в claims JWT НИКОГДА нельзя класть секретные данные (пароль, номер карты,
+приватные персональные данные) — токен читаем кем угодно, кто его перехватит. Подпись защищает
+только целостность (никто не подменил роль с USER на ADMIN), не конфиденциальность.</p>
+<details><summary>В токене лежит claim "authorities": ["ROLE_USER"]. Может ли атакующий,
+перехвативший чужой токен, поменять этот claim на ROLE_ADMIN и заставить сервер это принять?</summary>
+Прочитать и попытаться подменить — может, содержимое видно всем. Но заставить сервер принять
+подделку — нет: как только payload меняется хотя бы на один байт, подпись (вычисленная по
+исходному содержимому + секретному ключу сервера) перестаёт совпадать, сервер отклонит токен
+при валидации. Атакующий не знает секретный ключ сервера, поэтому не может пересчитать валидную
+подпись под изменённые данные.
+</details>
+
+<h3 id="access-refresh">Access + refresh токен</h3>
+<p class="q">Суть.</p>
+<p>Access-токен — короткоживущий (минуты/часы), используется на каждый запрос. Refresh-токен —
+долгоживущий, используется РЕДКО — только чтобы получить новый access, не спрашивая пароль
+заново.</p>
+<p class="q">Простыми словами.</p>
+<p>Access — временный гостевой пропуск на один день в офис, истекает быстро. Refresh — основная
+карта сотрудника: с ней раз в неделю идёшь на ресепшн и получаешь новый одноразовый гостевой
+пропуск, не проходя заново полное собеседование с охраной (не вводя пароль).</p>
+<pre><code>String accessToken  = jwtTokenProvider.createAccessToken(username, authorities);  // минуты/часы
+String refreshToken = jwtTokenProvider.createRefreshToken(username);              // дни/недели</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Разделение существует ради ограничения ущерба: если access утёк — окно атаки ограничено
+временем его жизни (истечёт сам). Refresh хранится и передаётся реже, поэтому у него меньше
+шансов утечь — но если утечёт именно он, ущерб куда серьёзнее (можно бесконечно перевыпускать
+access), поэтому refresh часто хранят в более защищённом месте (HttpOnly-кука, а не localStorage
+— см. карточку про JWT в SPA из прошлых модулей).</p>
+<details><summary>Почему бы просто не сделать access-токен тоже долгоживущим — тогда вообще не
+нужен отдельный refresh-механизм?</summary>
+Тогда при утечке access-токена (а он летает на КАЖДЫЙ запрос, поверхность атаки шире) окно
+для злоупотребления растягивается на весь срок его жизни — дни/недели вместо минут. Короткий
+access + редко используемый refresh — компромисс между удобством (не логиниться каждые 15 минут)
+и ограничением ущерба от утечки.
+</details>
+
+<h3 id="jwt-stateless">JWT stateless — и почему его нельзя отозвать</h3>
+<p class="q">Суть.</p>
+<p>Вся идея JWT — сервер НЕ ходит в БД на каждый запрос, просто проверяет подпись математически.
+Но раз сервер никуда не ходит проверять — он физически не может «на лету» узнать, что токен уже
+отозван.</p>
+<p class="q">Простыми словами.</p>
+<p>Временный пропуск, который сам себя подтверждает по печати, без звонка на ресепшн. Удобно и
+быстро — но если пропуск украли, нельзя позвонить охране «не пускайте его»: охрана вообще
+никому не звонит, она просто смотрит на печать на пропуске.</p>
+<pre><code>// Redis рядом с JWT в реальном проекте (BNPL) — единственный способ реально
+// прекратить действие токена раньше срока истечения
+redisValueOperationsAdapter.put(Caches.REVOKED_TOKENS, tokenId, true, ttl);</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Это архитектурное противоречие уровня architect, не деталь реализации: сама суть JWT —
+избавиться от похода в общее хранилище на каждый запрос ради масштабируемости. Но «отозвать
+токен раньше срока» требует ровно то самое общее хранилище (блеклист в Redis/БД), от которого
+изначально пытались избавиться. На практике это компромисс: держат TTL access-токена коротким
+(минимизируя вред без блеклиста), а блеклист используют только для действительно критичных
+случаев (logout, компрометация аккаунта) — не для каждой проверки.</p>
+<details><summary>Пользователь нажал «Выйти со всех устройств». Как это вообще реализовать с
+чистым stateless JWT, если сервер по определению ничего не хранит про выданные токены?</summary>
+Строго stateless-подходом — никак: это и есть предел архитектуры. На практике заводят
+внешнее состояние специально под этот случай — например, помечают в БД/Redis момент времени
+«все токены, выпущенные ДО этой метки, невалидны», и при каждой валидации токена дополнительно
+сверяют его issuedAt с этой меткой. Это уже не «чистый» JWT — гибрид с минимальным внешним
+состоянием.
+</details>
+
+<h3 id="roles-permissions">Роли vs permission'ы: комбинаторный взрыв</h3>
+<p class="q">Суть.</p>
+<p>Роль — готовый жёсткий пакет прав. Permission — атомарный «кирпичик» права, из которых можно
+собрать любую комбинацию. Для N ресурсов × M действий нужно ровно N×M permission'ов, но в
+худшем случае до 2^(N×M) уникальных ролей, если сочетания нужных прав у людей разные.</p>
+<p class="q">Простыми словами.</p>
+<p>Роль — фиксированное меню в кафе (борщ+котлета+компот, без права поменять местами).
+Permission — шведский стол, где сам берёшь ровно то, что нужно.</p>
+<pre><code>// Через роли — рост числа ролей может быть комбинаторным
+ROLE_VIEWER, ROLE_EDITOR_NO_DELETE, ROLE_REPORTS_ONLY, ... // "role explosion"
+
+// Через permissions — всегда ровно 15 кирпичиков на 5 ресурсов × 3 действия
+files.read, files.write, files.delete, users.read, users.write, ...
+// любому человеку — любое подмножество, новых "кирпичиков" не требуется</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>5 ресурсов × 3 действия (read/write/delete) = 15 permission'ов — этого точно достаточно на
+всё. А ролей в худшем теоретическом случае может понадобиться до 2^15, если каждое из 15 прав
+независимо нужно/не нужно конкретному человеку — комбинаторный взрыв, а не линейный рост. На
+практике до такого экстремума не доходит, но реальная боль называется role explosion:
+десятки почти одинаковых ролей типа «Редактор без права удаления».</p>
+<details><summary>В компании роль ADMIN и роль MODERATOR почти одинаковы, только у MODERATOR
+нет доступа к разделу Settings. Как это решается через permission-модель, не заводя дублирующую
+роль?</summary>
+ADMIN и MODERATOR — просто два разных набора уже существующих атомарных permission'ов, а не
+две отдельные захардкоженные роли. У MODERATOR из общего пула permission'ов просто не выдан
+<code>settings.read</code>/<code>settings.write</code> — не нужно ничего «изобретать» заново,
+только скомпоновать по-другому существующие кирпичики.
+</details>
+
+<h3 id="dto-per-role">DTO по ролям: @JsonView vs отдельные классы</h3>
+<p class="q">Суть.</p>
+<p>Задача: одна и та же сущность (например, <code>File</code>) должна отдаваться по-разному в
+зависимости от роли — ADMIN видит внутренний путь в MinIO, USER — только публичную ссылку.
+Плодить <code>AdminFileData</code>/<code>UserFileData</code>/<code>ModeratorFileData</code>
+отдельными классами — это тот же паттерн role explosion, что мы уже разбирали для ролей/
+permission'ов, только на уровне DTO-классов. У Jackson есть механизм для этого —
+<code>@JsonView</code> — но на практике его используют реже, чем отдельные явные DTO.</p>
+<p class="q">Простыми словами.</p>
+<p><code>@JsonView</code> — как один общий бланк с полями, часть которых помечена
+полупрозрачным маркером «показывать только определённым людям» — сам бланк один, но что видно
+на выходе, зависит от того, кто на него смотрит. Отдельные DTO — как заранее распечатать разные
+версии бланка под каждую аудиторию.</p>
+<pre><code>// @JsonView — один класс, поля размечены "видами"
+class Views { interface Public {} interface Internal extends Public {} }
+class FileDto {
+    @JsonView(Views.Public.class)   String name;
+    @JsonView(Views.Public.class)   String publicUrl;
+    @JsonView(Views.Internal.class) String internalPath; // видно только с этим view
+}
+
+// Отдельные DTO — то, что реально видно в проде (в т.ч. в видео и в BNPL)
+class UserFileDto  { String name; String publicUrl; }
+class AdminFileDto { String name; String publicUrl; String internalPath; }</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>В реальном коде (проверено — в BNPL <code>@JsonView</code> не встречается ни разу)
+предпочитают отдельные явные DTO + маппер, а не <code>@JsonView</code>, по нескольким причинам:
+(1) плохо композируется со вложенными объектами — вью-иерархии быстро запутываются; (2) слабая
+типобезопасность — забыл повесить аннотацию на новое поле, оно молча утекло всем; (3) смешивает
+domain/API-логику с ролевой — на общем классе появляются аннотации, знающие про роли; (4)
+тяжелее тестировать — "JSON содержит/не содержит поле в зависимости от view" сложнее проверить,
+чем "метод вернул объект нужного типа". <code>@JsonView</code> уместен в небольших внутренних
+инструментах без глубокой вложенности — не как основной паттерн в командной enterprise-разработке.</p>
+<details><summary>Элегантное с точки зрения архитектуры решение (@JsonView, один DTO-класс) —
+почему это не всегда то же самое, что решение, которое реально выбирают senior-инженеры в
+проде?</summary>
+Потому что "меньше классов" — не единственный и не главный критерий качества в командной
+разработке. Явные отдельные DTO проигрывают в лаконичности, но выигрывают в предсказуемости,
+типобезопасности и простоте ревью/тестирования — а это то, что реально экономит время команды
+на дистанции, а не при первом написании кода.
+</details>
+
+<h2>Docker</h2>
+
+<h3 id="docker-vs-vm">Docker vs виртуальная машина: что реально изолирует</h3>
+<p class="q">Суть.</p>
+<p>Контейнер не тащит свою ОС — использует ядро хоста напрямую, изоляцию дают конкретные
+механизмы ядра Linux: <b>namespaces</b> (у каждого контейнера своя "видимость" процессов/сети/
+файловой системы) и <b>cgroups</b> (лимиты CPU/памяти). VM — полноценная гостевая ОС поверх
+гипервизора, отдельное ядро на каждую машину.</p>
+<p class="q">Простыми словами.</p>
+<p>VM — отдельная квартира каждому жильцу: своя кухня, свой санузел, свои счётчики (своё ядро).
+Дорого и долго заселяться. Контейнер — комната в общаге: своя дверь и вещи, но кухня (ядро) одна
+на всех — быстро заехать, быстро выехать.</p>
+<pre><code>VM:        железо → гипервизор → [гостевая ОС + приложение] × N   (каждая — своё ядро)
+Контейнер: железо → ОС хоста → [приложение + namespaces/cgroups] × N   (одно ядро на всех)</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>На Mac/Windows нет Linux-ядра, а контейнеру оно нужно — поэтому Docker Desktop прозрачно
+поднимает под капотом лёгкую Linux-VM (на Mac — через Apple Virtualization.framework, на
+Windows — через WSL2), и уже внутри неё гоняет контейнеры. «Докер вообще без виртуалки» — миф,
+верный только на голом Linux-хосте; на Mac/Windows VM физически есть, просто спрятана от
+пользователя.</p>
+<details><summary>Ты на Mac видишь, что контейнер стартует за секунду, а не за минуту, как VM —
+значит ли это, что Docker Desktop на Mac работает вообще без виртуализации?</summary>
+Нет. Docker Desktop на Mac всё равно поднимает лёгкую Linux-VM под капотом (нужна для
+Linux-ядра, которого у macOS нет) — просто она тонкая, стартует один раз при запуске Docker
+Desktop, а не пересоздаётся на каждый контейнер. Быстрый старт контейнера — это быстрый старт
+процесса ВНУТРИ уже поднятой VM, а не отсутствие VM как таковой.
+</details>
+
+<h3 id="docker-layers">Image layers и кэширование сборки</h3>
+<p class="q">Суть.</p>
+<p>Каждая строка Dockerfile — отдельный слой образа. При пересборке Docker сверяет чек-сумму
+содержимого каждого шага по порядку сверху вниз: совпало — берёт слой из кэша без выполнения;
+разошлось хоть раз — этот и ВСЕ ПОСЛЕДУЮЩИЕ слои пересобираются заново, даже если сами по себе
+не менялись.</p>
+<p class="q">Простыми словами.</p>
+<p>Как готовка по рецепту с заметками "шаг сделан": если поменял ингредиент на шаге 3, весь
+прогресс до шага 3 можно не переделывать, но шаги 4-5-6 после него готовишь заново — даже если
+сами эти шаги не поменялись, раз то, что было до них, уже другое.</p>
+<pre><code>FROM node            # слой 1 — кэшируется, пока не сменил базовый образ
+WORKDIR /app          # слой 2
+COPY package.json .   # слой 3 — кэшируется, пока package.json не менялся
+RUN npm install        # слой 4 — кэшируется ТОЛЬКО пока слой 3 не поменялся
+COPY . .              # слой 5 — почти всегда меняется (код правится чаще всего)
+</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Отсюда практическое правило: `COPY package.json` + `npm install` ставят ДО `COPY . .` с
+остальным кодом — тогда правки в коде приложения не заставляют каждый раз пере-качивать все
+зависимости заново. С Docker 23+ единственный билдер — BuildKit (legacy builder выпилен): он
+считает кэш по контенту, а не только по порядку строк, и умеет `RUN --mount=type=cache` —
+кэшировать папку зависимостей (npm/gradle) напрямую между сборками, без танцев с порядком строк.</p>
+<details><summary>Пересобираешь образ, поменяв ТОЛЬКО последнюю строку Dockerfile (например
+ENTRYPOINT). Все строки ДО неё (FROM, COPY package.json, RUN npm install) не трогал. Пересборка
+возьмёт всё заново, или переиспользует что-то из кэша?</summary>
+Переиспользует всё, что стоит ДО изменившейся строки — раз чек-суммы этих шагов не поменялись,
+Docker берёт их слои из кэша. Пересобирается только сама изменившаяся строка (в данном случае
+последняя) — если бы изменение было в середине файла, пересобралось бы всё после него.
+</details>
+
+<h3 id="docker-volumes">Volumes: bind mount vs named volume</h3>
+<p class="q">Суть.</p>
+<p><b>Bind mount</b> (<code>-v /host/path:/container/path</code>) — жёсткая привязка к
+конкретному пути на диске хоста. <b>Named volume</b> (<code>docker volume create</code>,
+<code>-v myvolume:/path</code>) — хранилище, которым управляет сам Docker, не привязанное к
+конкретному пути хоста.</p>
+<p class="q">Простыми словами.</p>
+<p>Bind mount — воткнуть флешку с конкретным известным тебе путём в проводнике. Named volume —
+сдать вещи в камеру хранения по номеру жетона: где физически лежат вещи — не твоя забота, ты
+просто предъявляешь жетон (имя volume) и получаешь их обратно.</p>
+<pre><code># bind mount — путь хоста жёстко зашит, ломается при переносе на другую машину/CI
+docker run -v /Users/me/data:/data/db mongo
+
+# named volume — портируется между машинами, докер сам решает, где физически хранить
+docker volume create dbdata
+docker run -v dbdata:/data/db mongo</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Для персистентных данных сервиса (то, ради чего вообще монтируют volume к базе) правильный
+выбор — named volume: не завязан на конкретный путь конкретной машины, переносится между хостами
+и CI без правок. Bind mount уместен для другого класса задач — подмонтировать конфиг или
+исходники в дев-режиме, где путь на хосте как раз важен и известен заранее.</p>
+<details><summary>Данные базы в контейнере смонтированы через bind mount на путь /Users/me/data.
+Тот же docker-compose.yml без изменений запускают на CI-сервере — что произойдёт?</summary>
+Путь <code>/Users/me/data</code> на CI-сервере, скорее всего, не существует или ведёт не туда —
+bind mount либо создаст там пустую директорию (данных не будет), либо упадёт с ошибкой в
+зависимости от настроек. Named volume этой проблемы не имеет — Docker сам решает физическое
+размещение на каждой машине одинаково прозрачно.
+</details>
+
+<h3 id="docker-localhost">localhost внутри контейнера vs host.docker.internal</h3>
+<p class="q">Суть.</p>
+<p>У контейнера своя изолированная сетевая namespace — поэтому `localhost` внутри контейнера
+означает "сам контейнер", а не хост-машину, на которой он запущен. Приложение внутри контейнера,
+пытающееся достучаться до Postgres, поднятого прямо на хосте (не в Docker), по `localhost:5432` —
+стучится само в себя, а не в базу.</p>
+<p class="q">Простыми словами.</p>
+<p>Контейнер — отдельная комната в здании. Сказав внутри комнаты "локальный" — имеешь в виду
+СВОЮ комнату, а не всё здание. Чтобы обратиться именно к зданию (хост-машине) — нужен отдельный,
+осмысленный на это адрес.</p>
+<pre><code># НЕ сработает изнутри контейнера — резолвится в сам контейнер:
+jdbc:postgresql://localhost:5432/db
+
+# сработает — специальное DNS-имя, всегда указывающее на хост-машину:
+jdbc:postgresql://host.docker.internal:5432/db</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>`host.docker.internal` исторически — фича именно Docker Desktop (Mac/Windows), где Docker сам
+держит внутренний DNS-сервер для этого имени. На голом Linux Docker Engine это по умолчанию НЕ
+работало — с Docker 20.10+ поведение доступно, но нужно явно попросить флагом
+`--add-host=host.docker.internal:host-gateway` при запуске контейнера.</p>
+<details><summary>Приложение внутри контейнера настроено на подключение к Postgres по
+localhost:5432, а Postgres реально установлен на хост-машине (не в Docker). Подключение
+пройдёт?</summary>
+Нет. Внутри контейнера localhost — это сам контейнер (своя изолированная сеть), а не хост.
+Нужно явно указать host.docker.internal вместо localhost, чтобы попасть на реальную хост-машину.
+</details>
+
+<h3 id="docker-compose-dns">Docker Compose: как сервисы находят друг друга по имени</h3>
+<p class="q">Суть.</p>
+<p>Сервис <code>web</code> в docker-compose.yml стучится к базе просто по имени сервиса
+(<code>mongo</code>), без явного IP. Это работает, потому что Compose создаёт для проекта
+отдельную сеть и поднимает в ней встроенный DNS-сервер — каждый контейнер при входе в сеть
+регистрирует там своё имя сервиса вместе со своим внутренним IP.</p>
+<p class="q">Простыми словами.</p>
+<p>Как обычный DNS в интернете (пишешь <code>google.com</code>, а не IP) — только это свой
+маленький справочник внутри одной докеровской сети, знающий имена только контейнеров этого же
+compose-проекта.</p>
+<pre><code># docker-compose.yml
+services:
+  web:
+    build: .
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/app   # "mongo" — имя СЕРВИСА, не хост-машины
+  mongo:
+    image: mongo</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Это работает только внутри сети, которую создал сам Compose (или явно созданной user-defined
+сети). Если поднять тот же <code>mongo</code> отдельной командой <code>docker run</code> в
+дефолтную сеть <code>bridge</code> — резолвинг по имени НЕ сработает: у дефолтной bridge-сети
+встроенного DNS по имени контейнера нет (раньше для этого был deprecated-флаг
+<code>--link</code>). Отдельная актуализация: сам бинарник <code>docker-compose</code> (через
+дефис, Compose V1 на Python) официально снят с поддержки в 2023 — сейчас это
+<code>docker compose</code> (через пробел), встроенный в Docker CLI плагин на Go.</p>
+<details><summary>Контейнер mongo подняли отдельной командой docker run (без compose, в
+дефолтную сеть bridge). Другой контейнер пробует достучаться до него по имени "mongo" —
+получится?</summary>
+Нет. Встроенный DNS по имени сервиса — это то, что настраивает именно Compose (или explicit
+user-defined сеть) при создании своей отдельной сети. Дефолтная сеть <code>bridge</code>, в
+которую попадают контейнеры от голого <code>docker run</code>, такого автоматического
+резолвинга по имени не даёт — обращаться пришлось бы по IP.
+</details>
+
+<h3 id="docker-secrets">Секрет в docker-compose.yml: почему мало просто .gitignore</h3>
+<p class="q">Суть.</p>
+<p>Пароль/ключ, один раз попавший в git-коммит, нельзя надёжно удалить задним числом — git хранит
+всю историю коммитов, а не только последний снэпшот, и старый коммит с секретом остаётся
+достижим через историю репозитория. Добавление файла в <code>.gitignore</code> после факта
+останавливает только БУДУЩИЕ коммиты, прошлое не трогает.</p>
+<p class="q">Простыми словами.</p>
+<p>Это как вычеркнуть страницу из оглавления книги — сама страница никуда не делась, она всё ещё
+физически лежит внутри книги, и любой, у кого есть книга (клон репозитория), может её открыть.</p>
+<pre><code># НЕ решает проблему для уже утёкшего секрета:
+git rm --cached docker-compose.yml
+echo "docker-compose.yml" >> .gitignore
+git commit -m "remove secret"   # секрет всё ещё живёт в старых коммитах истории</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Единственный по-настоящему надёжный фикс — <b>ротация</b> (сменить сам пароль/ключ), а не
+чистка истории. Причина: как только секрет попал в коммит хотя бы раз, невозможно гарантировать,
+что его никто уже не утащил — CI-логи, форк репозитория, чей-то локальный клон, снятый до фикса.
+Чистка истории (<code>git filter-repo</code>/BFG) — гигиена поверх, а не замена ротации.
+Архитектурно правильный путь заранее — не пускать секреты в файл, который вообще коммитится:
+сам <code>docker-compose.yml</code> (топология сервисов) обычно хотят коммитить и шарить с
+командой, а сам секрет — держать отдельно от него (например, через подстановку из окружения,
+не хардкодом в файле) и не коммитить вовсе.</p>
+<details><summary>Секрет закоммичен, потом почищен из истории через git filter-repo, и все
+разработчики свежо переклонировали репозиторий. Значит ли это, что старый секрет снова
+безопасен использовать?</summary>
+Нет. Чистка истории убирает секрет из ТЕКУЩЕГО состояния репозитория для тех, кто клонирует его
+заново — но не отменяет того, что секрет уже когда-то был виден всем, у кого был доступ к
+репозиторию (в т.ч. в CI-логах, форках, старых локальных клонах, которые не обязательно
+переклонировали). Единственный способ считать секрет снова безопасным — заменить его на новый.
+</details>
+
+<h2>Тестирование</h2>
+
+<h3 id="junit-discovery">JUnit: как фреймворк находит тесты — и молчаливый пропуск</h3>
+<p class="q">Суть.</p>
+<p>JUnit 3 находил тестовые методы через наследование от <code>TestCase</code> + конвенцию
+именования (метод должен начинаться со слова <code>test</code>). JUnit 4/5 — через аннотацию
+(<code>@Test</code> / <code>@org.junit.jupiter.api.Test</code>), имя метода при этом не важно.</p>
+<p class="q">Простыми словами.</p>
+<p>Конвенция по имени — как искать нужный кабинет в больнице по номеру на двери без всякой
+таблички "здесь принимает врач": работает, только если номер не перепутан. Аннотация — это и
+есть табличка "здесь врач", явная и видная сразу, а не зависящая от того, правильно ли
+пронумеровали дверь.</p>
+<pre><code>// JUnit 3 — метод найдётся ТОЛЬКО если имя начинается с "test"
+class MyTest extends TestCase {
+    public void testAddition() { ... }   // найдётся
+    public void estAddition() { ... }    // опечатка — молча НЕ найдётся, без единой ошибки
+}
+
+// JUnit 4/5 — имя метода не имеет значения, работает аннотация
+class MyTest {
+    @Test void checkAddition() { ... }   // найдётся, имя любое
+}</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Это не абстрактная история про синтаксис — это класс бага "ложное чувство покрытия", который
+кочует между версиями фреймворка в разных обличьях. В JUnit 3 опечатка в префиксе имени метода
+означает: тест физически не запускается, сборка зелёная, разработчик уверен, что покрытие есть.
+В 2026 тот же эффект получается по-другому: если в проекте настроен только JUnit 5 (Jupiter), а
+на метод по ошибке (например, автокомплит IDE подставил не то) повесили старую аннотацию
+<code>org.junit.Test</code> вместо <code>org.junit.jupiter.api.Test</code> — тест точно так же
+тихо не запустится, сборка останется зелёной, никакой ошибки компиляции не будет (это валидная
+аннотация из другого артефакта, просто её не видит настроенный test-engine). Механизм другой,
+ловушка та же самая.</p>
+<details><summary>В проекте настроен только JUnit 5, но на один тестовый метод по ошибке
+повесили org.junit.Test (JUnit 4) вместо org.junit.jupiter.api.Test. Что произойдёт при сборке —
+ошибка компиляции, ошибка запуска, или тест тихо не выполнится?</summary>
+Тест тихо не выполнится, сборка останется зелёной. Ошибки компиляции не будет — аннотация
+валидна (если зависимость JUnit 4 вообще есть на classpath), просто настроенный на проекте
+test-engine (Jupiter) её не распознаёт как маркер теста и просто игнорирует метод.
+</details>
+
+<h3 id="mockito-void-stub">Mockito: why doReturn().when() вместо when().thenReturn() для void</h3>
+<p class="q">Суть.</p>
+<p><code>when(mock.method()).thenReturn(x)</code> не компилируется, если <code>method()</code> —
+void. Причина не семантическая ("непонятно, когда вызов завершится"), а чисто синтаксическая:
+<code>void</code>-вызов не производит значения вообще, а не производит "пустое" значение вроде
+<code>null</code> — его физически нельзя поставить туда, где Java ждёт аргумент-выражение.</p>
+<p class="q">Простыми словами.</p>
+<p><code>null</code> — это пустой стакан, его можно передать из рук в руки. <code>void</code> —
+это "стакана вообще не было и не будет", передавать нечего в принципе.</p>
+<pre><code>Object x = someVoidMethod();     // не скомпилируется — void не value
+
+when(mock.voidMethod())...       // та же причина — не скомпилируется
+
+doReturn(x).when(mock).voidMethod();  // работает: voidMethod() тут — STATEMENT, а не
+                                        // аргумент-выражение, компилятору всё равно, что void</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Это не Mockito-специфичная магия, а базовое ограничение языка Java — void нельзя использовать
+как значение нигде: ни как аргумент, ни как правая часть присваивания. Mockito просто обходит это
+через reverse-порядок вызовов: <code>doReturn(x)</code> возвращает объект-стаббер первым, тот
+"запоминает" ожидаемое поведение, а сам вызов метода на моке идёт последним и как statement, а не
+как часть выражения — компилятору важно только то, ЧТО он void, но не то, ГДЕ он стоит.</p>
+<details><summary>Почему when(mock.voidMethod()).thenReturn(x) физически невозможно написать —
+причина в семантике Mockito или в базовом правиле Java?</summary>
+В базовом правиле Java: void-вызов не производит значения вообще (не "пустое" значение, а
+никакого), а <code>when(...)</code> — обычный метод, ожидающий аргумент-значение. Это ошибка
+компиляции, а не что-то, что Mockito мог бы обойти другой своей реализацией.
+</details>
+
+<h3 id="mockito-strict-stubbing">Mockito: strict stubbing и UnnecessaryStubbingException</h3>
+<p class="q">Суть.</p>
+<p>С Mockito 2+ по умолчанию включена строгая проверка стабов: если через <code>when()</code>
+настроено поведение метода, а тест его ни разу реально не вызвал — тест падает с
+<code>UnnecessaryStubbingException</code>, а не молча проходит с мёртвым стабом.</p>
+<p class="q">Простыми словами.</p>
+<p>Как будто тебе на складе выдали инструмент "на всякий случай", а ты его так и не достал из
+ящика за всю смену — строгий кладовщик спросит "а зачем ты его вообще брал", вместо того чтобы
+молча закрыть на это глаза.</p>
+<pre><code>@Test
+void test() {
+    when(mock.get(1)).thenReturn("a");  // застаблено...
+    // ...но метод mock.get(1) ни разу не вызван внутри теста
+}   // -> UnnecessaryStubbingException, а не тихий зелёный тест</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Это отдельный от <code>verify()</code> механизм: <code>verify()</code> ты просишь явно и
+целенаправленно, а strict stubbing работает автоматически фоном и ловит именно "мусорные" стабы —
+типичный побочный эффект рефакторинга теста, когда часть логики удалили, а `when()`-настройку под
+неё забыли убрать. Без строгого режима такой тест годами продолжает "проходить", создавая ложное
+чувство покрытия — тот же самый класс проблемы, что мы уже разбирали с JUnit (молчаливый пропуск
+теста), просто с другой стороны: не тест не запускается, а часть его настройки становится
+мёртвым грузом незамеченной.</p>
+<details><summary>Стаб настроен через when(), но тест ни разу реально не вызвал застабленный
+метод. В современном Mockito (2+) по умолчанию тест молча пройдёт, или упадёт с ошибкой?</summary>
+Упадёт — с <code>UnnecessaryStubbingException</code>. Strict stubbing включён по умолчанию
+именно для того, чтобы такие мёртвые стабы не оставались незамеченными годами.
+</details>
+
+<h2>Kubernetes</h2>
+
+<h3 id="k8s-architecture">Архитектура k8s: Control Plane, Pod/Deployment/Service</h3>
+<p class="q">Суть.</p>
+<p>Docker умеет запускать одну коробку-контейнер. Kubernetes — оркестратор: следит за целым
+складом коробок сразу (авто-восстановление упавших, масштабирование, балансировка нагрузки).
+Кластер = Control Plane (мозг: `kube-apiserver` — единственная точка входа, `etcd` — хранилище
+состояния, `kube-scheduler` — решает, на какую ноду поставить под, `kube-controller-manager` —
+следит, что реальность совпадает с желаемым состоянием) + Worker Nodes (руки: `kubelet` —
+реально запускает контейнеры, `kube-proxy` — сетевая часть).</p>
+<p class="q">Простыми словами.</p>
+<p>Диспетчерская служба склада: сама решает, на какую полку (ноду) поставить новую коробку
+(под), сама подставляет новую коробку, если старая упала, сама расставляет ещё коробок, если
+груза стало больше — а не кладовщик бегает и делает это руками на каждый чих.</p>
+<pre><code>Pod        — минимальная рабочая единица (1+ контейнер, свой внутренний IP, снаружи недоступен)
+Deployment — сколько подов и на основе какого образа держать (self-healing: под упал → пересоздан)
+Service    — стабильная точка входа поверх меняющихся подов (у подов IP меняется при пересоздании,
+             у Service — нет)</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Императивные команды (`kubectl create deployment ...` руками из терминала) работают, но не
+масштабируются на команду — нет истории изменений, непонятно, что применялось и когда. Стандарт
+в 2026 — декларативные YAML-манифесты + `kubectl apply -f`, живущие в git и катящиеся через
+CI/CD (Infrastructure as Code) — та же логика, что мы уже видели с Terraform-подобным подходом
+и в целом с idea "код — источник истины", а не ручные консольные команды.</p>
+<details><summary>Под неожиданно упал (например, вылетел OutOfMemory). Кто и как заметит это и
+пересоздаст под — без единого действия человека?</summary>
+`kube-controller-manager` в Control Plane постоянно сверяет желаемое состояние (сколько реплик
+пода описано в Deployment) с реальным (сколько реально работает) — расхождение он видит сам и
+командует `kube-scheduler`/`kubelet` поднять новый под взамен упавшего, без участия человека.
+</details>
+
+<h3 id="k8s-labels-selectors">Как Service находит свои поды: labels/selectors</h3>
+<p class="q">Суть.</p>
+<p>Service не хранит жёсткую ссылку "маршрутизируй на Deployment X" — вместо этого у подов есть
+метки (`labels`, ключ-значение, например `app: my-app`), а у Service — селектор (`selector`) с
+теми же ключами. Service подхватывает ЛЮБОЙ под с подходящей меткой, независимо от того, каким
+Deployment'ом этот под создан.</p>
+<p class="q">Простыми словами.</p>
+<p>Не "звонок конкретному сотруднику по личному номеру", а "объявление по громкой связи для всех,
+у кого на бейдже написано нужное отделение" — Service ищет по бейджу (метке), а не по имени
+конкретного создателя.</p>
+<pre><code># Deployment — вешает метку на свои поды
+spec:
+  template:
+    metadata:
+      labels: { app: my-app }
+
+# Service — ищет ЛЮБОЙ под с такой меткой
+spec:
+  selector: { app: my-app }
+  ports: [{ port: 80, targetPort: 8080 }]</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Развязка через метки, а не прямую ссылку — то, что позволяет, например, безопасно проводить
+canary-деплой: держать одновременно два Deployment'а (стабильный и новую версию) с ОДИНАКОВОЙ
+меткой `app: my-app`, но разными `version:` — один и тот же Service будет раскидывать трафик на
+оба сразу, просто меняя пропорцию подов каждой версии. Частый вопрос на собесе: "как Service
+понимает, куда слать трафик" — ответ именно про labels/selectors, не про имя Deployment.</p>
+<details><summary>Service настроен с selector: {app: my-app}. Есть два разных Deployment'а —
+оба помечают свои поды меткой app: my-app, но называются по-разному (my-app-v1, my-app-v2).
+Трафик Service пойдёт только на "родной" Deployment, или на оба?</summary>
+На оба — Service вообще не знает и не спрашивает, каким Deployment'ом создан под, он смотрит
+только на метки самого пода. Раз оба Deployment'а ставят одинаковую метку — оба набора подов
+попадают под один и тот же Service.
+</details>
+
+<h3 id="k8s-storage">PV/PVC vs emptyDir, access modes и почему File Storage — на S3</h3>
+<p class="q">Суть.</p>
+<p>`emptyDir` — пустая папка, создаваемая заново при старте ПОДА: переживает перезапуск контейнера
+внутри пода, но не переживает пересоздание самого пода. `PersistentVolume` (PV, реальный кусок
+хранилища на уровне кластера) + `PersistentVolumeClaim` (PVC, заявка пода на хранилище) разводят
+жизненный цикл данных и жизненный цикл конкретного пода — данные переживают пересоздание пода.</p>
+<p class="q">Простыми словами.</p>
+<p>`emptyDir` — черновик на обратной стороне пропуска сотрудника: уволили/переприписали
+сотрудника (пересоздали под) — черновик тоже исчез вместе с пропуском. PV/PVC — сейф в отдельной
+комнате здания, который просто ВЫДАЮТ нужному сотруднику по заявке: уволили одного, выдали ключ
+от того же сейфа следующему — содержимое сейфа никуда не делось.</p>
+<pre><code># под ссылается не на PV напрямую, а на заявку (PVC)
+volumes:
+  - name: storage
+    persistentVolumeClaim:
+      claimName: file-storage-pvc   # PVC сам найдёт подходящий PV</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>У PV есть access mode: `ReadWriteOnce` (RWO — писать может только ОДИН узел одновременно),
+`ReadOnlyMany` (много узлов, только чтение), `ReadWriteMany` (RWX — много узлов, чтение-запись,
+нужны спец-типы хранилища вроде NFS — локальный диск/облачный блочный диск так не умеют). Отсюда
+прямая архитектурная связь с практикой модуля: если File-сервис масштабировать до нескольких
+реплик НА РАЗНЫХ узлах, и всем нужно писать в одно хранилище — RWO физически ломается (второй
+узел не может примонтировать тот же volume на запись). Именно поэтому ТЗ ментора использует
+**MinIO S3**, а не расшаренный диск-volume: объектное хранилище изначально спроектировано под
+параллельную запись с любого числа реплик без этой головной боли — доступ идёт по HTTP/S3-API, а
+не через файловую систему конкретного узла.</p>
+<details><summary>File-сервис масштабировали до 3 реплик на разных worker-нодах, у каждой —
+PersistentVolumeClaim с access mode ReadWriteOnce к одному и тому же PV. Все три реплики смогут
+одновременно писать файлы?</summary>
+Нет — RWO допускает монтирование на запись только ОДНИМ узлом одновременно. Вторая и третья
+реплика на других узлах либо не смогут примонтировать volume вообще, либо (если случайно
+оказались на ТОМ ЖЕ узле) будут работать, но это не то масштабирование, которое планировалось.
+Для честного multi-node параллельного доступа нужен RWX-совместимый тип хранилища (NFS) или,
+как в этом модуле, вообще уйти от файловой системы в объектное S3-хранилище.
+</details>
+
+<h3 id="k8s-configmap-secret">ConfigMap vs Secret</h3>
+<p class="q">Суть.</p>
+<p>Оба — способ вынести конфиг ИЗ образа наружу и менять его без пересборки: `ConfigMap` для
+обычных значений (порт, путь, URL), `Secret` — та же механика, но для чувствительных данных
+(пароли, ключи), с дополнительным контролем доступа через RBAC внутри кластера.</p>
+<p class="q">Простыми словами.</p>
+<p>ConfigMap — стикер с адресом на видном месте, Secret — тот же стикер, только в запертом ящике
+стола, доступ к которому есть не у всех в офисе.</p>
+<pre><code>env:
+  - name: STORAGE_LOCATION
+    valueFrom:
+      configMapKeyRef: { name: file-service-config, key: storage.location }
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef: { name: file-service-secret, key: db.password }</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Само по себе разделение ConfigMap/Secret — это про УДОБСТВО УПРАВЛЕНИЯ ДОСТУПОМ внутри
+кластера (кто имеет право прочитать Secret-объекты через RBAC), а не про криптографическую
+защиту значения (см. [[k8s-secret-base64]] — Base64 обратим без ключа). Реальная защита секретов
+в 2026 — интеграция Secret с внешним менеджером (Vault/AWS Secrets Manager) для авто-ротации, а
+не сам факт, что значение лежит в объекте типа Secret, а не ConfigMap.</p>
+<details><summary>Если Secret так же легко декодируется, как ConfigMap читается — зачем вообще
+разделять их на два разных типа объекта?</summary>
+Разделение не про шифрование значения (оба одинаково не защищены криптографически), а про
+управление ДОСТУПОМ: RBAC-политики кластера можно настроить так, чтобы читать объекты типа
+Secret могли не все, кто может читать ConfigMap — то есть это механизм контроля доступа на
+уровне кластера, а не встроенное шифрование содержимого.
+</details>
+
+<h3 id="k8s-clusterip-nodeport">ClusterIP vs NodePort: не всё должно быть публичным</h3>
+<p class="q">Суть.</p>
+<p>`ClusterIP` (тип Service по умолчанию) — доступен ТОЛЬКО изнутри кластера, снаружи достучаться
+нельзя. `NodePort`/`LoadBalancer` — явно открывают сервис наружу. Не каждый сервис в системе
+должен быть публично доступен: некоторые существуют только для того, чтобы их дёргали другие
+сервисы внутри того же кластера.</p>
+<p class="q">Простыми словами.</p>
+<p>ClusterIP — внутренний добавочный номер офиса, звонить на него можно только из самого здания.
+NodePort — прямой городской номер, по которому дозвонится кто угодно снаружи.</p>
+<pre><code># Person — только для внутренних обращений (Address/Gateway дёргают его)
+apiVersion: v1
+kind: Service
+spec:
+  selector: { app: person }
+  type: ClusterIP        # по умолчанию, можно даже не писать явно
+
+# Gateway — точка входа для внешнего мира
+spec:
+  selector: { app: gateway }
+  type: NodePort</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Это прямая практика "минимальной поверхности атаки" — сервис, у которого нет причины быть
+публичным (внутренняя логика, к которой обращаются только другие сервисы того же кластера),
+физически не должен иметь способа быть вызванным напрямую снаружи. Внутри кластера обращение
+идёт по DNS-имени сервиса (`person-service`) — тот же принцип, что и с Docker Compose, только
+уровнем выше: весь кластер, а не одна пользовательская docker-сеть.</p>
+<details><summary>Сервис Person — ClusterIP, наружу не торчит. Postman пытается достучаться до
+него напрямую по внешнему IP кластера — получится?</summary>
+Нет — ClusterIP в принципе не имеет внешнего входа, только внутренний виртуальный IP, видимый
+исключительно другим объектам внутри кластера. Достучаться до Person снаружи можно только
+опосредованно — через сервис, который САМ является ClusterIP-клиентом Person, но при этом
+торчит наружу (в демке — Address или Gateway).
+</details>
+
+<h3 id="scaling-vs-bug">Нужно больше реплик, или это баг? CPU как индикатор</h3>
+<p class="q">Суть.</p>
+<p>Реактивный код/многопоточность (см. [[webflux-reactive]]) — это про то, насколько эффективно
+ОДИН под тратит свои ресурсы. Горизонтальное масштабирование (больше подов) нужно, когда ОДНОМУ
+поду физически не хватает ресурсов — но не любое падение throughput означает нехватку ресурсов.</p>
+<p class="q">Простыми словами.</p>
+<p>Кассир реально пашет на пределе (CPU под 100%, очередь растёт пропорционально нагрузке) — открой
+вторую кассу. Кассир СТОИТ и ничего не делает, просто чего-то ждёт (CPU простаивает, а очередь всё
+равно растёт) — вторая касса не поможет, кассир не занят работой, он завис.</p>
+<pre><code>CPU ~100% под нагрузкой, latency растёт пропорционально трафику
+  → реальный потолок ресурсов → добавить реплики (Horizontal Pod Autoscaler)
+
+CPU простаивает (10-20%), но latency всё равно растёт, throughput падает
+  → НЕ проблема мощности → баг в коде (например, блокирующий вызов внутри
+    реактивной цепочки WebFlux) → чинить код, не масштабирование</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>`Horizontal Pod Autoscaler` (HPA) автоматизирует именно первый сценарий: задаёшь целевой % CPU
+и диапазон реплик — K8s сам добавляет/убирает поды при пересечении порога. Но HPA слепо доверяет
+метрике CPU — если throughput падает из-за зависшего (не занятого CPU) кода, HPA просто наплодит
+кучу одинаково зависающих копий, не решив проблему, а замаскировав её ростом счёта за облако.</p>
+<details><summary>Под нагрузкой у сервиса просел throughput, но метрика CPU у подов показывает
+всего 15% загрузки. Стоит ли включать HPA и добавлять реплики?</summary>
+Нет, пока не разобрались в причине. Низкий CPU при просевшем throughput — сигнал, что под не
+занят полезной работой, а где-то ЖДЁТ (блокирующий вызов, зависший запрос к БД, дедлок).
+Добавление реплик в этой ситуации не решит проблему — просто получишь больше копий, застревающих
+на той же самой причине. Сначала находят и чинят причину зависания, HPA включают только когда
+реальный потолок — это именно CPU/память, занятые полезной работой.
+</details>
+
+<h3 id="k8s-secret-base64">k8s Secret: Base64 — не шифрование</h3>
+<p class="q">Суть.</p>
+<p>Kubernetes `Secret` хранит чувствительные значения (пароли, ключи) закодированными в Base64
+внутри YAML-манифеста. Ровно как с Basic Auth в Spring Security — Base64 обратимо декодируется
+без всякого ключа, это не шифрование, а просто перекодировка.</p>
+<p class="q">Простыми словами.</p>
+<p>Как надпись на открытке, написанная другим алфавитом — выглядит нечитаемо на первый взгляд,
+но любой, кто знает алфавит (а Base64 — это публично известный алфавит), прочитает мгновенно.</p>
+<pre><code>echo "cGFzc3dvcmQxMjM=" | base64 -d
+# password123 — без всякого ключа, за долю секунды</code></pre>
+<p class="q">Senior-нюанс.</p>
+<p>Если такой Secret-манифест хоть раз закоммичен в git с реальным значением внутри — та же
+самая история, что мы разбирали с docker-compose: `.gitignore` задним числом не спасает (git
+хранит всю историю), чистка истории не гарантирует, что никто уже не утащил копию — единственный
+надёжный фикс — ротация самого секрета. Поэтому в реальных кластерах Kubernetes `Secret`
+используют не как самостоятельную защиту, а как интеграционную точку с внешним secret-менеджером
+(AWS Secrets Manager, HashiCorp Vault, Sealed Secrets) — сам объект `Secret` даёт удобство
+управления доступом внутри кластера, а не криптографическую защиту содержимого.</p>
+<details><summary>Секрет в Kubernetes Secret закодирован в Base64 и манифест был закоммичен в
+git с реальным паролем внутри. Достаточно ли теперь просто удалить файл из репозитория и
+добавить в .gitignore?</summary>
+Нет — та же логика, что с docker-compose: git хранит полную историю коммитов, старый коммит с
+паролем остаётся физически достижим. Раз секрет уже был виден — единственный надёжный фикс не
+чистка истории, а ротация самого пароля/ключа.
+</details>
+
+<hr>
+<p><i>Все 13 источников теории пройдены. Дальше — разметка модели данных и практика (User/Event/
+File REST API), см. PROGRESS.md → «Практика».</i></p>
+
+</body>
+</html>
