@@ -33,8 +33,6 @@ class EventRepositoryTest extends AbstractIntegrationTest {
         User user = userRepository.save(new User(null, "ivan", UserStatus.ACTIVE)).block();
         File file = fileRepository.save(new File(null, "report.pdf", "bucket/report.pdf", FileStatus.ACTIVE)).block();
 
-        // MySQL TIMESTAMP has no sub-second precision by default, so truncate the fixture
-        // to seconds up front — otherwise the round-trip comparison below would never match.
         LocalDateTime timestamp = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         Event event = new Event(null, user.getId(), file.getId(), EventStatus.CREATED, timestamp);
 
@@ -77,12 +75,8 @@ class EventRepositoryTest extends AbstractIntegrationTest {
         File file = fileRepository.save(new File(null, "doc.pdf", "bucket/doc.pdf", FileStatus.ACTIVE)).block();
 
         LocalDateTime createdAt = LocalDateTime.now().minusMinutes(5);
-        // Earlier event, different user, non-CREATED status — rules out "earliest by timestamp".
         eventRepository.save(new Event(null, otherUser.getId(), file.getId(), EventStatus.UPDATED, createdAt.minusMinutes(1))).block();
         eventRepository.save(new Event(null, owner.getId(), file.getId(), EventStatus.CREATED, createdAt)).block();
-        // Later event, different user, non-CREATED status — rules out "latest by timestamp".
-        // Together with the earlier event above, the CREATED event is bracketed on both sides,
-        // so only filtering on status = 'CREATED' (not "earliest" or "latest by timestamp") can pass.
         eventRepository.save(new Event(null, otherUser.getId(), file.getId(), EventStatus.DELETED, createdAt.plusMinutes(1))).block();
 
         StepVerifier.create(eventRepository.findOwnerUserIdByFileId(file.getId()))

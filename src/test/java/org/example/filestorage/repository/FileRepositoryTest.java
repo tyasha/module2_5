@@ -28,4 +28,16 @@ class FileRepositoryTest extends AbstractIntegrationTest {
                         found.getName().equals("report.pdf") && found.getStatus() == FileStatus.ACTIVE)
                 .verifyComplete();
     }
+
+    @Test
+    void findByIdAndStatusExcludesFileWithDifferentStatus() {
+        File file = new File(null, "archived.pdf", "bucket/archived.pdf", FileStatus.ARCHIVED);
+        File saved = fileRepository.save(file).block();
+
+        StepVerifier.create(fileRepository.findByIdAndStatus(saved.getId(), FileStatus.ACTIVE))
+                .verifyComplete();
+
+        StepVerifier.create(fileRepository.findAllByStatus(FileStatus.ACTIVE))
+                .verifyComplete();
+    }
 }

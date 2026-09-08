@@ -78,6 +78,7 @@ dependencies {
 	testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
 	testImplementation 'org.testcontainers:testcontainers-mysql'
 	testImplementation 'org.testcontainers:testcontainers-r2dbc'
+	testImplementation 'org.testcontainers:testcontainers-minio'
 	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
 
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

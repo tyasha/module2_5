@@ -28,4 +28,16 @@ class UserRepositoryTest extends AbstractIntegrationTest {
                         found.getUsername().equals("ivan") && found.getStatus() == UserStatus.ACTIVE)
                 .verifyComplete();
     }
+
+    @Test
+    void findByIdAndStatusExcludesUserWithDifferentStatus() {
+        User user = new User(null, "blocked-user", UserStatus.BLOCKED);
+        User saved = userRepository.save(user).block();
+
+        StepVerifier.create(userRepository.findByIdAndStatus(saved.getId(), UserStatus.ACTIVE))
+                .verifyComplete();
+
+        StepVerifier.create(userRepository.findAllByStatus(UserStatus.ACTIVE))
+                .verifyComplete();
+    }
 }
