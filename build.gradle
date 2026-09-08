@@ -24,28 +24,25 @@ ext {
 
 dependencyManagement {
 	imports {
-		// разводим версии всех AWS SDK v2 модулей одной BOM — та же логика,
-		// что Spring Boot делает для своих стартеров
+		// единая версия для всех AWS SDK-модулей
 		mavenBom "software.amazon.awssdk:bom:${awssdkVersion}"
 	}
 }
 
 dependencies {
-	// Web: реактивный стек, не MVC — см. PROGRESS.md, архитектурное решение №1
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-	// БД: реактивный доступ (R2DBC), не Spring Data JPA — см. PROGRESS.md
+	// не JPA — см. PROGRESS.md
 	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
-	// официального R2DBC-драйвера для MySQL нет (в отличие от Postgres/MariaDB) —
-	// io.asyncer:r2dbc-mysql — актуальный community-преемник dev.miku:r2dbc-mysql
+	// community-драйвер, официального для MySQL нет
 	runtimeOnly 'io.asyncer:r2dbc-mysql'
 
-	// Flyway мигрирует через отдельный БЛОКИРУЮЩИЙ JDBC-драйвер — у R2DBC нет
-	// нативной поддержки миграций (тот же архитектурный шов, что в источнике №8)
-	implementation 'org.flywaydb:flyway-core'
-	implementation 'org.flywaydb:flyway-mysql'
+	// Flyway работает через blocking JDBC — у R2DBC нет поддержки миграций
+	runtimeOnly 'org.springframework.boot:spring-boot-flyway' // без него автоконфигурация Flyway не подключится (Boot 4)
+	runtimeOnly 'org.flywaydb:flyway-core'
+	runtimeOnly 'org.flywaydb:flyway-mysql'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
 	// JWT
@@ -53,26 +50,34 @@ dependencies {
 	runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
 	runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 
-	// MinIO через AWS SDK v2 S3-клиент (MinIO S3-совместим, endpointOverride на MinIO)
-	implementation 'software.amazon.awssdk:s3'
+	// клиент для MinIO (S3-совместимо); только асинхронный, синхронный тащит блокирующий http-клиент
+	implementation('software.amazon.awssdk:s3') {
+		exclude group: 'software.amazon.awssdk', module: 'apache5-client'
+	}
 
-	// OpenAPI/Swagger — реактивный вариант стартера, не MVC-шный
+	// не MVC-вариант — тот тут не заведётся
 	implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:3.1.0'
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
+	implementation 'org.mapstruct:mapstruct:1.6.3'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+	// порядок важен — без неё Lombok и MapStruct конфликтуют при генерации кода
+	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
 	testCompileOnly 'org.projectlombok:lombok'
 	testAnnotationProcessor 'org.projectlombok:lombok'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	// StepVerifier и т.п. для тестирования Mono/Flux — легко забыть, без него
-	// starter-test не даёт нормально тестировать реактивный код
+	// без этого не потестируешь Mono/Flux (StepVerifier)
 	testImplementation 'io.projectreactor:reactor-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testImplementation 'org.testcontainers:mysql'
+	// Testcontainers 2.x переименовал все модули с префиксом testcontainers-*
+	testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+	testImplementation 'org.testcontainers:testcontainers-mysql'
+	testImplementation 'org.testcontainers:testcontainers-r2dbc'
 	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
 
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

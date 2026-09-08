@@ -36,3 +36,6 @@ build/
 ### Секреты — не должны попасть в git ни разу (см. review.md: секрет vs .gitignore задним числом) ###
 .env
 *.env.local
+
+### superpowers SDD — служебный workspace, не часть проекта ###
+.superpowers/

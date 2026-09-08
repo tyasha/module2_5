@@ -1,0 +1,9 @@
+CREATE TABLE events (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT,
+  file_id INT,
+  status VARCHAR(50) NOT NULL,
+  timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (file_id) REFERENCES files(id)
+);
