@@ -5,9 +5,11 @@ import org.example.filestorage.dto.UserDto;
 import org.example.filestorage.exception.NotFoundException;
 import org.example.filestorage.mapper.UserMapper;
 import org.example.filestorage.model.User;
+import org.example.filestorage.model.UserRole;
 import org.example.filestorage.model.UserStatus;
 import org.example.filestorage.repository.UserRepository;
 import org.example.filestorage.service.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,10 +20,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -40,8 +44,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<UserDto> create(String username) {
-        User user = new User(null, username, UserStatus.ACTIVE);
+    public Mono<UserDto> create(String username, String rawPassword) {
+        User user = new User(null, username, passwordEncoder.encode(rawPassword), UserRole.USER, UserStatus.ACTIVE);
         return userRepository.save(user)
                 .map(userMapper::toDto)
                 .doOnSuccess(dto -> log.info("Юзер '{}' создан, id={}", dto.username(), dto.id()))

@@ -22,6 +22,12 @@ public class User {
     @Column("username")
     private String username;
 
+    @Column("password")
+    private String password;
+
+    @Column("role")
+    private UserRole role;
+
     @Column("status")
     private UserStatus status;
 }

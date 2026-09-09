@@ -10,7 +10,7 @@ public interface UserService {
 
     Flux<UserDto> getAll();
 
-    Mono<UserDto> create(String username);
+    Mono<UserDto> create(String username, String rawPassword);
 
     Mono<UserDto> rename(Integer id, String username);
 

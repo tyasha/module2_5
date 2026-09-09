@@ -6,6 +6,7 @@ import org.example.filestorage.model.EventStatus;
 import org.example.filestorage.model.File;
 import org.example.filestorage.model.FileStatus;
 import org.example.filestorage.model.User;
+import org.example.filestorage.model.UserRole;
 import org.example.filestorage.model.UserStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ class EventRepositoryTest extends AbstractIntegrationTest {
 
     @Test
     void savesEventLinkedToRealUserAndFile() {
-        User user = userRepository.save(new User(null, "ivan", UserStatus.ACTIVE)).block();
+        User user = userRepository.save(new User(null, "ivan", "password123", UserRole.USER, UserStatus.ACTIVE)).block();
         File file = fileRepository.save(new File(null, "report.pdf", "bucket/report.pdf", FileStatus.ACTIVE)).block();
 
         LocalDateTime timestamp = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
@@ -59,7 +60,7 @@ class EventRepositoryTest extends AbstractIntegrationTest {
 
     @Test
     void rejectsEventWithNonExistentFile() {
-        User user = userRepository.save(new User(null, "ivan", UserStatus.ACTIVE)).block();
+        User user = userRepository.save(new User(null, "ivan", "password123", UserRole.USER, UserStatus.ACTIVE)).block();
 
         Event event = new Event(null, user.getId(), 999_999, EventStatus.CREATED, LocalDateTime.now());
 
@@ -70,8 +71,8 @@ class EventRepositoryTest extends AbstractIntegrationTest {
 
     @Test
     void findsOwnerByCreatedEvent() {
-        User owner = userRepository.save(new User(null, "petr", UserStatus.ACTIVE)).block();
-        User otherUser = userRepository.save(new User(null, "sidor", UserStatus.ACTIVE)).block();
+        User owner = userRepository.save(new User(null, "petr", "password123", UserRole.USER, UserStatus.ACTIVE)).block();
+        User otherUser = userRepository.save(new User(null, "sidor", "password123", UserRole.USER, UserStatus.ACTIVE)).block();
         File file = fileRepository.save(new File(null, "doc.pdf", "bucket/doc.pdf", FileStatus.ACTIVE)).block();
 
         LocalDateTime createdAt = LocalDateTime.now().minusMinutes(5);

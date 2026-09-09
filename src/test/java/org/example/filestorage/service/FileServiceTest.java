@@ -9,6 +9,7 @@ import org.example.filestorage.mapper.FileMapper;
 import org.example.filestorage.model.EventStatus;
 import org.example.filestorage.model.FileStatus;
 import org.example.filestorage.model.User;
+import org.example.filestorage.model.UserRole;
 import org.example.filestorage.model.UserStatus;
 import org.example.filestorage.repository.EventRepository;
 import org.example.filestorage.repository.FileRepository;
@@ -48,7 +49,7 @@ class FileServiceTest extends AbstractIntegrationTest {
 
     @Test
     void uploadStoresContentInMinioAndCreatesFilePlusEvent() {
-        User user = userRepository.save(new User(null, "ivan", UserStatus.ACTIVE)).block();
+        User user = userRepository.save(new User(null, "ivan", "password123", UserRole.USER, UserStatus.ACTIVE)).block();
         byte[] content = "hello world".getBytes();
 
         FileDto dto = fileService.upload("report.pdf", content, user.getId()).block();
@@ -75,7 +76,7 @@ class FileServiceTest extends AbstractIntegrationTest {
 
     @Test
     void deleteArchivesFileWithoutRemovingRow() {
-        User user = userRepository.save(new User(null, "petr", UserStatus.ACTIVE)).block();
+        User user = userRepository.save(new User(null, "petr", "password123", UserRole.USER, UserStatus.ACTIVE)).block();
         FileDto uploaded = fileService.upload("doc.pdf", "content".getBytes(), user.getId()).block();
 
         FileDto deleted = fileService.delete(uploaded.id(), user.getId()).block();
@@ -93,7 +94,7 @@ class FileServiceTest extends AbstractIntegrationTest {
 
     @Test
     void archivedFileIsHiddenFromGetByIdGetAllAndGetContent() {
-        User user = userRepository.save(new User(null, "sidor", UserStatus.ACTIVE)).block();
+        User user = userRepository.save(new User(null, "sidor", "password123", UserRole.USER, UserStatus.ACTIVE)).block();
         FileDto uploaded = fileService.upload("secret.pdf", "content".getBytes(), user.getId()).block();
 
         fileService.delete(uploaded.id(), user.getId()).block();
@@ -119,7 +120,7 @@ class FileServiceTest extends AbstractIntegrationTest {
 
     @Test
     void getContentStreamsLargeFileInMultipleChunks() {
-        User user = userRepository.save(new User(null, "big-file-user", UserStatus.ACTIVE)).block();
+        User user = userRepository.save(new User(null, "big-file-user", "password123", UserRole.USER, UserStatus.ACTIVE)).block();
         byte[] content = new byte[5 * 1024 * 1024]; // заведомо больше одного internal-чанка стрима
         ThreadLocalRandom.current().nextBytes(content);
 
@@ -140,7 +141,7 @@ class FileServiceTest extends AbstractIntegrationTest {
         FileContentService brokenContentService = new FileContentServiceImpl(s3AsyncClient, badBucketProperties);
         FileService brokenFileService = new FileServiceImpl(fileRepository, eventService, brokenContentService, fileMapper);
 
-        User user = userRepository.save(new User(null, "broken-put-user", UserStatus.ACTIVE)).block();
+        User user = userRepository.save(new User(null, "broken-put-user", "password123", UserRole.USER, UserStatus.ACTIVE)).block();
 
         StepVerifier.create(brokenFileService.upload("doc.pdf", "content".getBytes(), user.getId()))
                 .expectError(FileStorageUnavailableException.class)

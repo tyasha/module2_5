@@ -24,5 +24,8 @@ minio:
   secret-key: ${MINIO_SECRET_KEY:minioadmin}
   bucket: ${MINIO_BUCKET:files}
 
-# TODO: секция jwt появится вместе с соответствующими @ConfigurationProperties,
-# когда дойдём до реализации Security — не заводить заранее вслепую
+jwt:
+  # dev-значение по умолчанию — в проде переопределяется через JWT_SECRET (env). Не короче 32
+  # байт — jjwt требует минимум 256 бит ключа для HS256, иначе падает при старте
+  secret: ${JWT_SECRET:dev-only-secret-key-change-me-please-32bytes-min}
+  expiration-ms: ${JWT_EXPIRATION_MS:3600000}

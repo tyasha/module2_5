@@ -2,10 +2,12 @@ package org.example.filestorage;
 
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.mysql.MySQLContainer;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -17,7 +19,8 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import java.net.URI;
 import java.util.List;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureWebTestClient
 public abstract class AbstractIntegrationTest {
 
     protected static final String TEST_BUCKET = "test-bucket";
@@ -48,6 +51,9 @@ public abstract class AbstractIntegrationTest {
 
     @Autowired
     protected S3AsyncClient s3AsyncClient;
+
+    @Autowired
+    protected WebTestClient webTestClient;
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
